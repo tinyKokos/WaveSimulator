@@ -13,20 +13,23 @@ initialTime = 0;
 finalTime = 1;
 NtimePoints = 50; 
 
-%PropagationSpeed = physconst('LightSpeed');
+PropagationSpeed = 300;
 tDelta = (finalTime-initialTime)/NtimePoints;
 xDelta = (finalX-initialX)/Npoints;
 
-CFL = 0.75;
+CFL = (PropagationSpeed*tDelta)/xDelta;
 
-%check CFL condition 
-%CFL = (PropagationSpeed*tDelta)/xDelta;
-
-%Ideally I should just check the CFL and adjust some input to make it work
-%but right now I will be lazy and just adjust the PropagationSpeed to fix
-%my CFL
-
-PropagationSpeed = (CFL*xDelta)/tDelta;
+if CFL > 1
+    fprintf('Your inputs will create an unstable system. Speed will be automatically adjusted for stability\n\n');
+    prompt = 'Enter desired CFL: ';
+    desiredCFL = input(prompt);
+    if desiredCFL <= 1
+        PropagationSpeed = (desiredCFL*xDelta)/tDelta;
+    else
+        fprintf('Not a valid CFL. Exiting Program\n');
+        return
+    end
+end
 
 %{
 desiredCFL = 0.75;

@@ -12,24 +12,36 @@ initialTime = 0;
 finalTime = 1;
 NtimePoints = 50; 
 
-%PropagationSpeed = physconst('LightSpeed');
+PropagationSpeed = 300;
 tDelta = (finalTime-initialTime)/NtimePoints;
 xDelta = (finalX-initialX)/Npoints;
 
-CFL = 0.75;
+CFL = (PropagationSpeed*tDelta)/xDelta;
 
-%check CFL condition 
-%CFL = (PropagationSpeed*tDelta)/xDelta;
+if CFL > 1
+    fprintf('Your inputs will create an unstable system. Speed will be automatically adjusted for stability\n\n');
+    prompt = 'Enter desired CFL: ';
+    desiredCFL = input(prompt);
+    if desiredCFL <= 1
+        PropagationSpeed = (desiredCFL*xDelta)/tDelta;
+    else
+        fprintf('Not a valid CFL. Exiting Program\n');
+        return
+    end
+end
 
-%Ideally I should just check the CFL and adjust some input to make it work
-%but right now I will be lazy and just adjust the PropagationSpeed to fix
-%my CFL
+%Must make it be an array that matches the size of the data set
+alphaPoints = 10;
+alphaMax = 1; %can't allow negatives
 
-PropagationSpeed = (CFL*xDelta)/tDelta;
+for n = 1:alphaPoints
 
-%New constants that I do not know what they are for the PML
-alpha0 = 1;
-c0 = 1;
+if (2*alphaPoints) > Npoints
+   fprintf("Thickness of PML is too large\n");
+   return
+elseif (2*alphaPoints) == Npoints
+    fprintf("Warning: PML covers entire space\n");
+end
 
 %plot the initial function set
 func = SineInput(Ncycles, finalX, initialX, Npoints);
@@ -73,19 +85,17 @@ output2 = (((speed^2)*(deltaT^2))/(deltaX^2))*(funcAheadX ...
     - 2*func + funcBehindX) + 2*func - funcBehindT; 
 end
 
-function output3 = Central1DFiniteDiffPML(speed, c0, alpha, deltaT, ...
+function output3 = PML_1dFiniteDiff(speed, alpha, deltaT, ...
     deltaX, funcAheadX, func, funcBehindX, funcBehindT)
 %Central1DFiniteDiffPML: <summary>
-%   <function details>
-constant1 = (deltaT^2*speed^2*c0)/(deltaX^2*c0 + (deltaX^2)*deltaT*(speed^2)*alpha);
-constant2 = (alpha*deltaT*speed^2 - c0)/(c0+deltaT*alpha*speed^2);
-constant3 = 2*c0*deltaX^2;
-constant4 = -1*(deltaT^2)*(deltaX^2)*(speed^2)*(alpha^2)*c0;
-constant5 = -2*(deltaT^2)*(speed^2)*(c0^2);
-constant6 = c0*deltaX^2 + alpha*deltaT*(deltaX^2)*(speed^2);
+%   This is using the numeric approxiation of the first derivative of the
+%   function; (d/dt)f(x,t) -> (f(x,t) - f(x,t-tDELTA))/tDELTA
+constant1 = ((speed^2)*(deltaT^2))/(deltaX^2);
+constant2 = alpha*speed*deltaT;
+%this function only works for t != initial time
 output3 = constant1*funcAheadX + ...
-    ((constant3+constant4+constant5)/constant6)*func + ...
-    constant1*funcBehindX + constant2*funcBehindT;
+    (2 - 2*constant1 - constant2^2 - 2*constant2)*func + ...
+    constant1*funcBehindX + (2*constant2 - 1)*funcBehindT;
 end
 
 function output = SineInput(Cycles,Xfinal, Xinitial, NumberOfPoints)

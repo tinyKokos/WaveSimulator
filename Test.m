@@ -22,27 +22,30 @@ Ncycles = 1.5; %number of full sine cycles
 %set inputs for the time
 initialTime = 0;
 finalTime = 1;
-NtimePoints = 200; 
+NtimePoints = 50; 
 
-%PropagationSpeed = physconst('LightSpeed');
+PropagationSpeed = 300; %this is just meant as a place holder value
+PropagationSpeedX = PropagationSpeed; %I assume that speed in Y & X
+PropagationSpeedY = PropagationSpeed; % must be equal to each other
 tDelta = (finalTime-initialTime)/NtimePoints;
 xDelta = (finalX-initialX)/Npoints;
 yDelta = (finalY-initialY)/Npoints;
 
-CFL = 0.75;
-
 %check CFL condition 
-%CFL = (PropagationSpeed*tDelta)/xDelta;
+CFL = (PropagationSpeed*tDelta)/xDelta;
 
-%Ideally I should just check the CFL and adjust some input to make it work
-%but right now I will be lazy and just adjust the PropagationSpeed to fix
-%my CFL
-
-%for 2d the speed of X and Y should be scaled depending on
-% delta in X compared with delta in Y
-
-PropagationSpeedX = 0.5*(CFL*xDelta)/tDelta;
-PropagationSpeedY = 0.5*(CFL*yDelta)/tDelta;
+if CFL > 1
+    fprintf('Your inputs will create an unstable system. Speed will be automatically adjusted for stability\n\n');
+    prompt = 'Enter desired CFL: ';
+    desiredCFL = input(prompt);
+    if desiredCFL <= 1
+        PropagationSpeedX = (desiredCFL*xDelta)/tDelta;
+        PropagationSpeedY = (desiredCFL*yDelta)/tDelta;
+    else
+        fprintf('Not a valid CFL. Exiting Program\n');
+        return
+    end
+end
 
 x = linspace(initialX,finalX,Npoints);
 y = linspace(initialY,finalY,Npoints);
@@ -79,69 +82,6 @@ for t = 1:(NtimePoints-1)
    zlim([-2 2]);
    pause(0.1);
 end
-
-%rest of the code
-%{
-%{
-desiredCFL = 0.75;
-if CFL > 1
-    %this is my fun trying to make a dialog log box setup to correct the
-    %CFL
-    %{
-    prompt = {'Your inputs will create an unstable system. It is not recommended to proceed with your setup. Would you prefer to run anyways (1), exit (2), or automatically set a new space interval to avoid this (3)?'};
-    dlgtitle = 'Potential Unstability Detected';
-    dims = [1 35];
-    definput = {'2'};
-    answer = inputdlg(prompt,dlgtitle,dims,definput)
-    switch(answer)
-        case '1'
-            continue;
-        case '3'
-            prompt2 = {'Set your desired CFL (must be less than or equal to 1)'};
-            dlgtitle2 = 'Set CFL';
-            definput = {'0.75'};
-            answer2 = inputdlg(prompt2, dlgtitle2,dims, definput);
-            
-        otherwise
-            quit(1); 
-%}
-    
-    %My hack way to force the CFL to meet a desired CFL
-    xDelta = desiredCFL/(PropagationSpeed*tDelta);
-    Npoints = round((finalX-initialX)/xDelta);
-    disp("Note: CFL was not less than or equal to 1. Spatial dimensions are adjusted to Npoints = " + num2str(Npoints));
-end
-%}
-%plot the initial function set
-func = SineInput(Ncycles, finalX, initialX, Npoints);
-x = linspace(initialX,finalX,Npoints);
-plot(x, func);
-ylim([-2 2]);
-
-nextFunc = zeros(length(func));
-pastFunc = zeros(length(func));
-
-for t = 1:(NtimePoints-1)
-        for n = 2:(Npoints-1)
-            if t == 1
-                nextFunc(n)= 0.5*Central1DFiniteDiff(PropagationSpeed, tDelta, xDelta, func(n+1), func(n), func(n-1), 0);
-            else
-                nextFunc(n) = Central1DFiniteDiff(PropagationSpeed, tDelta, xDelta, func(n+1), func(n), func(n-1), pastFunc(n));
-            end
-        end
- 
-    %force the fixed boundary conditions
-    nextFunc(1) = 0;
-    nextFunc(end) = 0;
-
-    pastFunc = func; %update the past function to equal the old present function
-    func = nextFunc; %update the present function to equal the old future function
-    %plot the new output
-    plot(x, func);
-    ylim([-2 2]);
-    pause(0.1);
-end
-%}
 
 function output4 = Central2DFiniteDiff(speedX, speedY, deltaT, deltaX, ...
     deltaY, funcAheadX, funcAheadY, func, funcBehindX, funcBehindY, funcBehindT)
