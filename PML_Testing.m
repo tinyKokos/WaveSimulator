@@ -2,9 +2,17 @@
 % started from 11/7/2019
 % started by copying the FiniteDifference.m file on 11/7/2019
 
+%Notes to self:
+% 1st - switch this to a Fixed Force Fixed String setup
+% 2nd - create the alpha array thing and finish the PML
+% 3rd - modify the automatic CFL adjust to be better
+
+close all;
+
 initialX = 0;
 finalX = 3;
 Npoints = 10; %number of points between the initial and final X
+sourcePt = floor((finalX - initialX)/2)+1;
 Ncycles = 1; %number of full sine cycles
 
 %set inputs for the time
@@ -30,25 +38,30 @@ if CFL > 1
     end
 end
 
+%Alpha Stuff
+%{
 %Must make it be an array that matches the size of the data set
 alphaPoints = 10;
 alphaMax = 1; %can't allow negatives
 
-for n = 1:alphaPoints
+%for n = 1:alphaPoints
 
+    
 if (2*alphaPoints) > Npoints
    fprintf("Thickness of PML is too large\n");
    return
 elseif (2*alphaPoints) == Npoints
     fprintf("Warning: PML covers entire space\n");
 end
+%}
 
 %plot the initial function set
-func = SineInput(Ncycles, finalX, initialX, Npoints);
-x = linspace(initialX,finalX,Npoints);
-plot(x, func);
-ylim([-2 2]);
+%func = SineInput(Ncycles, finalX, initialX, Npoints);
+%x = linspace(initialX,finalX,Npoints);
+%plot(x, func);
+%ylim([-2 2]);
 
+func = zeros(Npoints);
 nextFunc = zeros(length(func));
 pastFunc = zeros(length(func));
 
@@ -86,16 +99,21 @@ output2 = (((speed^2)*(deltaT^2))/(deltaX^2))*(funcAheadX ...
 end
 
 function output3 = PML_1dFiniteDiff(speed, alpha, deltaT, ...
-    deltaX, funcAheadX, func, funcBehindX, funcBehindT)
+    deltaX, funcAheadX, func, funcBehindX, funcBehindT, time)
 %Central1DFiniteDiffPML: <summary>
 %   This is using the numeric approxiation of the first derivative of the
 %   function; (d/dt)f(x,t) -> (f(x,t) - f(x,t-tDELTA))/tDELTA
 constant1 = ((speed^2)*(deltaT^2))/(deltaX^2);
 constant2 = alpha*speed*deltaT;
-%this function only works for t != initial time
-output3 = constant1*funcAheadX + ...
-    (2 - 2*constant1 - constant2^2 - 2*constant2)*func + ...
-    constant1*funcBehindX + (2*constant2 - 1)*funcBehindT;
+if time == 0 %this funciton only works for t == initial time
+    output3 = constant1*funcAheadX + ...
+        (1 - 2*constant1 - constant2^2)*func + ...
+        constant1*funcBehindX;
+else %this function only works for t != initial time
+    output3 = constant1*funcAheadX + ...
+        (2 - 2*constant1 - constant2^2 - 2*constant2)*func + ...
+        constant1*funcBehindX + (2*constant2 - 1)*funcBehindT;
+end
 end
 
 function output = SineInput(Cycles,Xfinal, Xinitial, NumberOfPoints)

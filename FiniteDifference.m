@@ -3,6 +3,8 @@
 % Kx = (n pi) / (x max)
 % Ky = (n pi) / (ymax)
 
+close all; 
+
 initialX = 0;
 finalX = 3;
 Npoints = 10; %number of points between the initial and final X
@@ -71,13 +73,15 @@ nextFunc = zeros(length(func));
 pastFunc = zeros(length(func));
 
 for t = 1:(NtimePoints-1)
-        for n = 2:(Npoints-1)
-            if t == 1
-                nextFunc(n)= 0.5*Central1DFiniteDiff(PropagationSpeed, tDelta, xDelta, func(n+1), func(n), func(n-1), 0);
-            else
-                nextFunc(n) = Central1DFiniteDiff(PropagationSpeed, tDelta, xDelta, func(n+1), func(n), func(n-1), pastFunc(n));
-            end
+    %this line is for the source origin
+    
+    for n = 2:(Npoints-1)
+        if t == 1
+            nextFunc(n)= 0.5*Central1DFiniteDiff(PropagationSpeed, tDelta, xDelta, func(n+1), func(n), func(n-1), 0);
+        else
+            nextFunc(n) = Central1DFiniteDiff(PropagationSpeed, tDelta, xDelta, func(n+1), func(n), func(n-1), pastFunc(n));
         end
+    end
  
     %force the fixed boundary conditions
     nextFunc(1) = 0;

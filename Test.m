@@ -12,6 +12,8 @@
 % Kx = (n pi) / (x max)
 % Ky = (n pi) / (ymax)
 
+close all;
+
 initialX = 0;
 finalX = 3;
 initialY = 0;
