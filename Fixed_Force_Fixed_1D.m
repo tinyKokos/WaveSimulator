@@ -7,13 +7,13 @@ close all;
 
 initialX = 0;
 finalX = 3;
-Npoints = 100; %number of points between the initial and final X
-sourcePt = floor((Npoints)/2)
+Npoints = 200; %number of points between the initial and final X
+sourcePt = floor((Npoints)/2);
 frequency = 3; %frequency of sine for input of source point
 
 %set inputs for the time
 initialTime = 0;
-finalTime = 1;
+finalTime = 20;
 NtimePoints = 50; 
 
 PropagationSpeed = 300;
@@ -28,6 +28,8 @@ func(sourcePt) = sin(frequency*2*pi*tDelta);
 
 CFL = (PropagationSpeed*tDelta)/xDelta;
 
+%Modifying the propagation speed to fix the CFL makes working with this
+%simulation pretty frustrating. I should try some other way.
 if CFL > 1
     fprintf('Your inputs will create an unstable system. Speed will be automatically adjusted for stability\n\n');
     prompt = 'Enter desired CFL: ';
@@ -80,26 +82,15 @@ function output2 = Central1DFiniteDiff(speed, deltaT, deltaX, ...
 %   numerically in the function. For the calculating the first set of
 %   points after the initial function is given use funcBehindT = 0 and
 %   half the result of the function
+arguments
+   speed (1,:) {mustBeNumeric, mustBeFinite, mustBePositive}
+   deltaT (1,:) {mustBeNumeric, mustBeFinite}
+   deltaX (1,:) {mustBeNumeric, mustBeFinite}
+   funcAheadX (:,:) {mustBeNumeric, mustBeFinite}
+   func (:,:) {mustBeNumeric, mustBeFinite}
+   funcBehindX (:,:) {mustBeNumeric, mustBeFinite}
+   funcBehindT (:,:) {mustBeNumeric, mustBeFinite}
+end
 output2 = (((speed^2)*(deltaT^2))/(deltaX^2))*(funcAheadX ...
     - 2*func + funcBehindX) + 2*func - funcBehindT; 
 end
-
-%This is for later in the project
-function output3 = PML_1dFiniteDiff(speed, alpha, deltaT, ...
-    deltaX, funcAheadX, func, funcBehindX, funcBehindT, time)
-%Central1DFiniteDiffPML: <summary>
-%   This is using the numeric approxiation of the first derivative of the
-%   function; (d/dt)f(x,t) -> (f(x,t) - f(x,t-tDELTA))/tDELTA
-constant1 = ((speed^2)*(deltaT^2))/(deltaX^2);
-constant2 = alpha*speed*deltaT;
-if time == 0 %this funciton only works for t == initial time
-    output3 = constant1*funcAheadX + ...
-        (1 - 2*constant1 - constant2^2)*func + ...
-        constant1*funcBehindX;
-else %this function only works for t != initial time
-    output3 = constant1*funcAheadX + ...
-        (2 - 2*constant1 - constant2^2 - 2*constant2)*func + ...
-        constant1*funcBehindX + (2*constant2 - 1)*funcBehindT;
-end
-end
-

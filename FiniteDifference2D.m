@@ -26,17 +26,16 @@ yDelta = (finalY-initialY)/Npoints;
 x = linspace(initialX,finalX,Npoints);
 y = linspace(initialY,finalY,Npoints);
 
-func = SineInput2D(Ncycles, finalX, initialX, finalY, initialY, Npoints);
-mesh(x, y, func);
-zlim([-2 2]);
-
+%create arrays for functions to use at (t-1),t,(t+1)
 nextFunc = zeros(length(x), length(y));
 pastFunc = zeros(length(x), length(y));
 
-%check CFL condition 
+%check CFL condition for stability of simulation
 CFL = (PropagationSpeed*tDelta)/xDelta;
-
 if CFL > 1
+    %CFL is determined to be unstable, ask for a new CFL and scale the
+    %speed of the function so the CFL can be the same as the given value as
+    %long at the given CFL is less than 1
     fprintf('Your inputs will create an unstable system. Speed will be automatically adjusted for stability\n\n');
     prompt = 'Enter desired CFL: ';
     desiredCFL = input(prompt);
@@ -48,11 +47,16 @@ if CFL > 1
         return
     end
 end
+%create the initial function of product of 2 sine waves and plot it
+func = SineInput2D(Ncycles, finalX, initialX, finalY, initialY, Npoints);
+mesh(x, y, func);
+zlim([-2 2]); %amplitude of simulations is currently limited to 1
 
-for t = 1:(NtimePoints-1)
+%Simulation in time with Finite Difference Loop
+for t = 1:(NtimePoints-1) %ticks in time
    for n = 2:(Npoints-1) %correspond to X
       for m = 2:(Npoints-1) %correspond to Y
-          if t == 1
+          if t == 1 %Must use special case approximation to calculate the function at the first time step
               nextFunc(n,m) = 0.5*Central2DFiniteDiff(PropagationSpeedX, PropagationSpeedY, ...
                   tDelta, xDelta, yDelta, func(n+1,m), func(n,m+1), func(n,m), ...
                   func(n-1,m), func(n,m-1), 0);
@@ -70,6 +74,8 @@ for t = 1:(NtimePoints-1)
    pastFunc = func; %update the past function to equal the old present function
    func = nextFunc; %update the present function to equal the old future function
    
+   %might want to replace this with getframe() so I can play the video back
+   %without running the code multiple times
    mesh(x, y, func);
    zlim([-2 2]);
    pause(0.1);
@@ -77,20 +83,41 @@ end
 
 function output4 = Central2DFiniteDiff(speedX, speedY, deltaT, deltaX, ...
     deltaY, funcAheadX, funcAheadY, func, funcBehindX, funcBehindY, funcBehindT)
-%Central1DFiniteDiff Summary of this function goes here
-%   Detailed explanation goes here
+%Central1DFiniteDiff calculates the next value of the function after the
+%next time tick
+%   [detailed explanation]
+arguments
+    speedX (1,:) {mustBeNumeric, mustBeFinite, mustBePositive}
+    speedY (1,:) {mustBeNumeric, mustBeFinite, mustBePositive}
+    deltaT (1,:) {mustBeNumeric, mustBeFinite}
+    deltaX (1,:) {mustBeNumeric, mustBeFinite}
+    deltaY (1,:) {mustBeNumeric, mustBeFinite}
+    funcAheadX (:,:) {mustBeNumeric, mustBeFinite}
+    funcAheadY (:,:) {mustBeNumeric, mustBeFinite}
+    func (:,:) {mustBeNumeric, mustBeFinite}
+    funcBehindX (:,:) {mustBeNumeric, mustBeFinite}
+    funcBehindY (:,:) {mustBeNumeric, mustBeFinite}
+    funcBehindT (:,:) {mustBeNumeric, mustBeFinite}
+end
 
-%Note to self: this equation might be correct
 output4 = (((speedX^2)*(deltaT^2))/(deltaX^2))*(funcAheadX ...
     - 2*func + funcBehindX) + (((speedY^2)*(deltaT^2))/(deltaY^2))*(funcAheadY ...
     - 2*func + funcBehindY) + 2*func - funcBehindT; 
-
 end
 
 function output3 = SineInput2D(Cycles, Xfinal, Xinitial, Yfinal, Yinitial, NumberOfPoints)
-%SineInput2D Summary of this function goes here
+%SineInput2D creates a product of two sine waves in independent directions
 %   NOTE: this does assume that the number of points is equal
 %       in the y direction and the x direction
+arguments
+   Cycles (1,:) {mustBeNumeric, mustBeFinite, mustBePositive}
+   Xfinal (1,:) {mustBeNumeric, mustBeFinite}
+   Xinitial (1,:) {mustBeNumeric, mustBeFinite}
+   Yfinal (1,:) {mustBeNumeric, mustBeFinite}
+   Yinitial (1,:) {mustBeNumeric, mustBeFinite}
+   NumberOfPoints (1,:) {mustBeNumeric, mustBeFinite, mustBeNonzero}
+end
+
 x = linspace(Xinitial,Xfinal,NumberOfPoints);
 y = linspace(Yinitial,Yfinal,NumberOfPoints);
 output3 = sin(((Cycles*2*pi)/Xfinal)*(x-Xinitial)).*sin(((Cycles*2*pi)/Yfinal)*(y'-Yinitial));

@@ -99,13 +99,28 @@ function output2 = Central1DFiniteDiff(speed, deltaT, deltaX, ...
     funcAheadX, func, funcBehindX, funcBehindT)
 %Central1DFiniteDiff Summary of this function goes here
 %   Detailed explanation goes here
+arguments
+   speed (1,:) {mustBeNumeric, mustBeFinite, mustBePositive}
+   deltaT (1,:) {mustBeNumeric, mustBeFinite}
+   deltaX (1,:) {mustBeNumeric, mustBeFinite}
+   funcAheadX {mustBeNumeric, mustBeFinite}
+   func {mustBeNumeric, mustBeFinite}
+   funcBehindX {mustBeNumeric, mustBeFinite}
+   funcBehindT {mustBeNumeric, mustBeFinite}
+end
 output2 = (((speed^2)*(deltaT^2))/(deltaX^2))*(funcAheadX ...
     - 2*func + funcBehindX) + 2*func - funcBehindT; 
 end
 
-function output = SineInput(Cycles,Xfinal, Xinitial, NumberOfPoints)
+function output = SineInput(Cycles, Xfinal, Xinitial, NumberOfPoints)
 %SineInput Summary of this function goes here
 %   Detailed explanation goes here
+arguments
+   Cycles (1,:) {mustBeNumeric, mustBeFinite, mustBePositive}
+   Xfinal (1,:) {mustBeNumeric, mustBeFinite}
+   Xinitial (1,:) {mustBeNumeric, mustBeFinite}
+   NumberOfPoints (1,:) {mustBeNumeric, mustBeFinite, mustBePositive}
+end
 x = linspace(Xinitial,Xfinal,NumberOfPoints);
 output = sin(((Cycles*2*pi)/Xfinal)*(x-Xinitial));
 end

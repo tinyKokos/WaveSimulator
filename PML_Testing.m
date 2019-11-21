@@ -6,14 +6,14 @@
 % 1st - switch this to a Fixed Force Fixed String setup
 % 2nd - create the alpha array thing and finish the PML
 % 3rd - modify the automatic CFL adjust to be better
-
 close all;
 
 initialX = 0;
 finalX = 3;
-Npoints = 10; %number of points between the initial and final X
-sourcePt = floor((finalX - initialX)/2)+1;
-Ncycles = 1; %number of full sine cycles
+Npoints = 100; %number of points between the initial and final X
+sourcePt = floor((Npoints)/2);
+%Ncycles = 1; %number of full sine cycles for fixed string
+frequency = 3; %frequency of sine for input of source point
 
 %set inputs for the time
 initialTime = 0;
@@ -39,41 +39,57 @@ if CFL > 1
 end
 
 %Alpha Stuff
-%{
 %Must make it be an array that matches the size of the data set
-alphaPoints = 10;
+alphaPoints = 10; %this is the amount of points on each side of the graph
 alphaMax = 1; %can't allow negatives
+alphaDummy = zeros(alphaPoints);
+alpha = zeros(Npoints);
+limit1 = length(alpha) - alphaPoints;
 
-%for n = 1:alphaPoints
-
-    
-if (2*alphaPoints) > Npoints
+if (2*alphaPoints) >= Npoints
    fprintf("Thickness of PML is too large\n");
    return
-elseif (2*alphaPoints) == Npoints
-    fprintf("Warning: PML covers entire space\n");
+else
+    for e = 1:alphaPoints
+       alphaDummy(e) = 0.25*e; 
+    end
+    
+    for r = 1:(alphaPoints-1)
+        alpha(r) = alphaDummy(end-r);
+    end
+    alpha(limit:Npoints) = alphaDummy;
+    alpha(sourcePt) = 0; %force alpha to not affect the source point
 end
-%}
+
 
 %plot the initial function set
 %func = SineInput(Ncycles, finalX, initialX, Npoints);
-%x = linspace(initialX,finalX,Npoints);
+x = linspace(initialX,finalX,Npoints);
 %plot(x, func);
 %ylim([-2 2]);
 
 func = zeros(Npoints);
-nextFunc = zeros(length(func));
-pastFunc = zeros(length(func));
-
-for t = 1:(NtimePoints-1)
-        for n = 2:(Npoints-1)
+nextFunc = zeros(Npoints);
+pastFunc = zeros(Npoints);
+func(sourcePt) = sin(frequency*2*pi*tDelta);
+for t = 1:(NtimePoints)
+    %func(sourcePt) = sin(frequency*2*pi*t*tDelta);
+        for n = 2:(sourcePt-1)
             if t == 1
                 nextFunc(n)= 0.5*Central1DFiniteDiff(PropagationSpeed, tDelta, xDelta, func(n+1), func(n), func(n-1), 0);
             else
                 nextFunc(n) = Central1DFiniteDiff(PropagationSpeed, tDelta, xDelta, func(n+1), func(n), func(n-1), pastFunc(n));
             end
         end
- 
+        for m = (sourcePt+1):(Npoints-1)
+            if t == 1
+                nextFunc(m)= 0.5*Central1DFiniteDiff(PropagationSpeed, tDelta, xDelta, func(m+1), func(m), func(m-1), 0);
+            else
+                nextFunc(m) = Central1DFiniteDiff(PropagationSpeed, tDelta, xDelta, func(m+1), func(m), func(m-1), pastFunc(m));
+            end
+        end
+    nextFunc(sourcePt) = sin(frequency*2*pi*t*tDelta);
+    
     %force the fixed boundary conditions
     nextFunc(1) = 0;
     nextFunc(end) = 0;
@@ -105,7 +121,7 @@ function output3 = PML_1dFiniteDiff(speed, alpha, deltaT, ...
 %   function; (d/dt)f(x,t) -> (f(x,t) - f(x,t-tDELTA))/tDELTA
 constant1 = ((speed^2)*(deltaT^2))/(deltaX^2);
 constant2 = alpha*speed*deltaT;
-if time == 0 %this funciton only works for t == initial time
+if time == 0 %this function only works for t == initial time
     output3 = constant1*funcAheadX + ...
         (1 - 2*constant1 - constant2^2)*func + ...
         constant1*funcBehindX;
