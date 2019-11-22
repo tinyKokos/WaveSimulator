@@ -1,2 +1,135 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<MATLABProject xmlns="http://www.mathworks.com/MATLABProjectFile" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0"/>
+<deployment-project plugin="plugin.toolbox" plugin-version="1.0">
+  <configuration file="C:\Users\adamg\Documents\Repositories\WaveSimulator\WaveSimulator\WaveSimulator.prj" location="C:\Users\adamg\Documents\Repositories\WaveSimulator\WaveSimulator" name="WaveSimulator" target="target.toolbox" target-name="Package Toolbox">
+    <param.appname>WaveSimulator</param.appname>
+    <param.authnamewatermark>Adam Gleichman</param.authnamewatermark>
+    <param.email>gleichm1@msu.edu</param.email>
+    <param.company />
+    <param.summary>Wave Simulation Function Library based on Finite Difference</param.summary>
+    <param.description />
+    <param.screenshot>C:\Users\adamg\Pictures\pexels-photo-220213.jpeg</param.screenshot>
+    <param.version>1.0</param.version>
+    <param.output>${PROJECT_ROOT}\WaveSimulator.mltbx</param.output>
+    <param.products.name />
+    <param.products.id />
+    <param.products.version />
+    <param.platforms />
+    <param.guid>da25cfe0-71da-45a3-bac9-c858ed55da6b</param.guid>
+    <param.exclude.filters />
+    <param.exclude.pcodedmfiles>true</param.exclude.pcodedmfiles>
+    <param.examples />
+    <param.demosxml />
+    <param.apps />
+    <param.registered.apps />
+    <param.docs />
+    <param.getting.started.guide />
+    <param.matlabpath.excludes />
+    <param.javaclasspath.excludes />
+    <param.exported.on.package>false</param.exported.on.package>
+    <param.required.addons />
+    <param.matlab.project.id />
+    <param.matlab.project.name />
+    <param.release.start />
+    <param.release.end />
+    <param.release.current.only>false</param.release.current.only>
+    <param.compatiblity.windows>true</param.compatiblity.windows>
+    <param.compatiblity.macos>true</param.compatiblity.macos>
+    <param.compatiblity.linux>true</param.compatiblity.linux>
+    <param.compatiblity.matlabonline>true</param.compatiblity.matlabonline>
+    <param.installation.map />
+    <param.additional.sw.names />
+    <param.additional.sw.licenses />
+    <param.additional.sw.win.url />
+    <param.additional.sw.mac.url />
+    <param.additional.sw.linux.url />
+    <unset>
+      <param.authnamewatermark />
+      <param.email />
+      <param.company />
+      <param.description />
+      <param.version />
+      <param.output />
+      <param.products.name />
+      <param.products.id />
+      <param.products.version />
+      <param.platforms />
+      <param.exclude.filters />
+      <param.exclude.pcodedmfiles />
+      <param.examples />
+      <param.demosxml />
+      <param.apps />
+      <param.registered.apps />
+      <param.docs />
+      <param.getting.started.guide />
+      <param.matlabpath.excludes />
+      <param.javaclasspath.excludes />
+      <param.exported.on.package />
+      <param.required.addons />
+      <param.matlab.project.id />
+      <param.matlab.project.name />
+      <param.release.start />
+      <param.release.end />
+      <param.release.current.only />
+      <param.compatiblity.windows />
+      <param.compatiblity.macos />
+      <param.compatiblity.linux />
+      <param.compatiblity.matlabonline />
+      <param.installation.map />
+      <param.additional.sw.names />
+      <param.additional.sw.licenses />
+      <param.additional.sw.win.url />
+      <param.additional.sw.mac.url />
+      <param.additional.sw.linux.url />
+    </unset>
+    <fileset.rootdir>
+      <file>${PROJECT_ROOT}</file>
+    </fileset.rootdir>
+    <fileset.rootfiles>
+      <file>${PROJECT_ROOT}\.git</file>
+      <file>${PROJECT_ROOT}\FiniteDifference.m</file>
+      <file>${PROJECT_ROOT}\FiniteDifference2D.m</file>
+      <file>${PROJECT_ROOT}\FiniteDifferenceExamples</file>
+      <file>${PROJECT_ROOT}\FiniteVolume</file>
+      <file>${PROJECT_ROOT}\FiniteVolumeExamples</file>
+      <file>${PROJECT_ROOT}\Fixed_Force_Fixed_1D.m</file>
+      <file>${PROJECT_ROOT}\OldFiniteDifference</file>
+      <file>${PROJECT_ROOT}\PML_Testing.m</file>
+      <file>${PROJECT_ROOT}\README.md</file>
+      <file>${PROJECT_ROOT}\resources</file>
+      <file>${PROJECT_ROOT}\Test.m</file>
+      <file>${PROJECT_ROOT}\Unknown</file>
+    </fileset.rootfiles>
+    <fileset.depfun.included />
+    <fileset.depfun.excluded />
+    <fileset.package />
+    <build-deliverables>
+      <file location="${PROJECT_ROOT}" name="WaveSimulator.mltbx" optional="false">C:\Users\adamg\Documents\Repositories\WaveSimulator\WaveSimulator\WaveSimulator.mltbx</file>
+    </build-deliverables>
+    <workflow />
+    <matlab>
+      <root>C:\Program Files\MATLAB\R2019b</root>
+      <toolboxes>
+        <toolbox name="matlabcoder" />
+      </toolboxes>
+      <toolbox>
+        <matlabcoder>
+          <enabled>true</enabled>
+        </matlabcoder>
+      </toolbox>
+    </matlab>
+    <platform>
+      <unix>false</unix>
+      <mac>false</mac>
+      <windows>true</windows>
+      <win2k>false</win2k>
+      <winxp>false</winxp>
+      <vista>false</vista>
+      <linux>false</linux>
+      <solaris>false</solaris>
+      <osver>10.0</osver>
+      <os32>false</os32>
+      <os64>true</os64>
+      <arch>win64</arch>
+      <matlab>true</matlab>
+    </platform>
+  </configuration>
+</deployment-project>
