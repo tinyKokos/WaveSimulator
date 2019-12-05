@@ -4,6 +4,10 @@
 %       Is there a way to break the source point?
 close all;
 
+filename = 'FixedForceFixed1D.gif';
+FrameDelay = 0;
+ScaleChoice = 1;
+
 initialX = 0;
 finalX = 3;
 Npoints = 200; %number of points between the initial and final X
@@ -34,30 +38,55 @@ if CFL > 1
     prompt = 'Enter desired CFL: ';
     desiredCFL = input(prompt);
     if desiredCFL <= 1
-        PropagationSpeed = (desiredCFL*xDelta)/tDelta;
+        prompt = 'Choose to scale Speed (1), Time(2), or X(3): ';
+        ScaleChoice = input(prompt);
+        switch ScaleChoice
+            case 1
+                PropagationSpeed = (desiredCFL*xDelta)/tDelta;
+            case 2
+                
+            case 3
+                
+            otherwise
+                
+        end
     else
         fprintf('Not a valid CFL. Exiting Program\n');
         return
     end
 end
-
-for t = 1:(NtimePoints)
-    %Note to self: the central Finite Diff function use in the loops
-    % will be replaced with the Power Law Equation Function I made
-        for n = 2:(sourcePt-1)
+h = figure;
+for t = 1:NtimePoints
+    %plot the new output
+    plot(x, func);
+    ylim([-2 2]);
+    drawnow
+    % Capture the plot as an image 
+      frame = getframe(h); 
+      im = frame2im(frame); 
+      [imind,cm] = rgb2ind(im,256); 
+      % Write to the GIF File 
+      if t == 1 
+          imwrite(imind,cm,filename,'gif', 'Loopcount',inf); 
+      else 
+          imwrite(imind,cm,filename,'gif','WriteMode','append'); 
+      end
+      for n = 2:(sourcePt-1)
+            %NOTE TO SELF: the central Finite Diff function use in the loops
+            % will be replaced with the Power Law Equation Function I made
             if t == 1
                 nextFunc(n)= 0.5*Central1DFiniteDiff(PropagationSpeed, tDelta, xDelta, func(n+1), func(n), func(n-1), 0);
             else
                 nextFunc(n) = Central1DFiniteDiff(PropagationSpeed, tDelta, xDelta, func(n+1), func(n), func(n-1), pastFunc(n));
             end
-        end
-        for m = (sourcePt+1):(Npoints-1)
+      end
+      for m = (sourcePt+1):(Npoints-1)
             if t == 1
                 nextFunc(m)= 0.5*Central1DFiniteDiff(PropagationSpeed, tDelta, xDelta, func(m+1), func(m), func(m-1), 0);
             else
                 nextFunc(m) = Central1DFiniteDiff(PropagationSpeed, tDelta, xDelta, func(m+1), func(m), func(m-1), pastFunc(m));
             end
-        end
+      end
     nextFunc(sourcePt) = sin(frequency*2*pi*t*tDelta);
     
     %force the fixed boundary conditions
@@ -67,10 +96,7 @@ for t = 1:(NtimePoints)
 
     pastFunc = func; %update the past function to equal the old present function
     func = nextFunc; %update the present function to equal the old future function
-    %plot the new output
-    plot(x, func);
-    ylim([-2 2]);
-    pause(0.1); % I might want to modify this to be a different value
+    pause(FrameDelay);
 end
 
 function output2 = Central1DFiniteDiff(speed, deltaT, deltaX, ...
