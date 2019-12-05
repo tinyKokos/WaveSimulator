@@ -4,6 +4,7 @@
 % Ky = (n pi) / (ymax)
 
 close all; 
+%% Declare Variables
 
 initialX = 0;
 finalX = 3;
@@ -19,8 +20,8 @@ PropagationSpeed = 300;
 tDelta = (finalTime-initialTime)/NtimePoints;
 xDelta = (finalX-initialX)/Npoints;
 
+%% Stability Checking
 CFL = (PropagationSpeed*tDelta)/xDelta;
-
 if CFL > 1
     fprintf('Your inputs will create an unstable system. Speed will be automatically adjusted for stability\n\n');
     prompt = 'Enter desired CFL: ';
@@ -63,7 +64,7 @@ if CFL > 1
     disp("Note: CFL was not less than or equal to 1. Spatial dimensions are adjusted to Npoints = " + num2str(Npoints));
 end
 %}
-%plot the initial function set
+%% Calculate and Plot Function
 func = SineInput(Ncycles, finalX, initialX, Npoints);
 x = linspace(initialX,finalX,Npoints);
 plot(x, func);
@@ -113,8 +114,14 @@ output2 = (((speed^2)*(deltaT^2))/(deltaX^2))*(funcAheadX ...
 end
 
 function output = SineInput(Cycles, Xfinal, Xinitial, NumberOfPoints)
-%SineInput Summary of this function goes here
-%   Detailed explanation goes here
+%SineInput Create a 1D array output of a sine wave
+%   Cycles - How many full cycles the output array must complete in the 
+%   given amount of space
+%   Xfinal - the value of the final point in space of the array
+%   Xinitial - the value of the initial point in the space of the array
+%   NumberOfPoints - how many discrete points the output array must have
+%    
+%   Example: SineInput(1, 6, 1, 4) = [0    0.9848   -0.3420   -0.8660]
 arguments
    Cycles (1,:) {mustBeNumeric, mustBeFinite, mustBePositive}
    Xfinal (1,:) {mustBeNumeric, mustBeFinite}

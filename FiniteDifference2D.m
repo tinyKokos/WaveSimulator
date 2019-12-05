@@ -8,7 +8,7 @@ initialX = 0;
 finalX = 3;
 initialY = 0;
 finalY = 3;
-Npoints = 10; %number of points between the initial and final X, Y
+Npoints = 50; %number of points between the initial and final X, Y
 Ncycles = 1.5; %number of full sine cycles
 
 %set inputs for the time

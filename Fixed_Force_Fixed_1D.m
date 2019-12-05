@@ -2,7 +2,6 @@
 % Fixed Force Fixed 1D String setup: created on 11/16/2019
 % Test Ideas I should think about
 %       Is there a way to break the source point?
-
 close all;
 
 initialX = 0;
@@ -92,5 +91,5 @@ arguments
    funcBehindT (:,:) {mustBeNumeric, mustBeFinite}
 end
 output2 = (((speed^2)*(deltaT^2))/(deltaX^2))*(funcAheadX ...
-    - 2*func + funcBehindX) + 2*func - funcBehindT; 
+    -2*func+funcBehindX)+2*func-funcBehindT; 
 end
