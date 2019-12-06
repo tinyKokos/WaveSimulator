@@ -33,3 +33,11 @@ Folders:
 	Tests
 
 		Collection of my attempted unit tests in MATLAB which are not working yet.	
+
+Good Example Programs to Run
+
+	FiniteDifference.m
+
+	FiniteDifference2D.m
+
+**NOTE: both will interact with prompt questions that will interact with the user. It is recommended to answer the prompt with 0.75. Valid answers for the CFL prompt will be less than or equal to 1.
