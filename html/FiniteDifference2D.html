@@ -1,0 +1,411 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>FiniteDifference2D.m</title><meta name="generator" content="MATLAB 9.7"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-12-05"><meta name="DC.source" content="FiniteDifference2D.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>FiniteDifference2D.m</h1><!--introduction--><p>This is the simulation of a sin(x)sin(y) that is numerically solved with the Finite Difference Method in 2D. The wave will be modelled as a standing wave in space with the wave being fixed to 0 at all boundaries.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Define Inputs</a></li><li><a href="#2">Stability Checking</a></li><li><a href="#3">Calculate and Plot Function</a></li><li><a href="#5">Capture Frame for .GIF output</a></li><li><a href="#6">Finite Difference Update Equation</a></li><li><a href="#8">Force Function to be 0 at Boundaries</a></li><li><a href="#10">Swap Function Arrays</a></li><li><a href="#12">Central1DFiniteDiff(speedX, speedY, deltaT, deltaX, deltaY, funcAheadX, funcAheadY, func, funcBehindX, funcBehindY, funcBehindT)</a></li><li><a href="#13">SineInput2D(Cycles, Xfinal, Xinitial, Yfinal, Yinitial, NumberOfPoints)</a></li></ul></div><h2 id="1">Define Inputs</h2><pre class="codeinput">close <span class="string">all</span>;
+
+<span class="comment">%Spatial Inputs</span>
+initialX = 0;
+finalX = 3;
+initialY = 0;
+finalY = 3;
+Npoints = 50; <span class="comment">%number of points between the initial and final X, Y</span>
+Ncycles = 1.5; <span class="comment">%number of full sine cycles</span>
+
+<span class="comment">%space vectors</span>
+x = linspace(initialX,finalX,Npoints);
+y = linspace(initialY,finalY,Npoints);
+
+<span class="comment">%set inputs for the time</span>
+initialTime = 0;
+finalTime = 1;
+NtimePoints = 4;
+
+<span class="comment">%Velocity is written to be the same for the X and Y direction but I wrote</span>
+<span class="comment">%this so I can easily start turning this into different X and Y speeds</span>
+PropagationSpeed = 300;
+PropagationSpeedX = PropagationSpeed;
+PropagationSpeedY = PropagationSpeed;
+
+tDelta = (finalTime-initialTime)/NtimePoints;
+xDelta = (finalX-initialX)/Npoints;
+yDelta = (finalY-initialY)/Npoints;
+
+filename = <span class="string">'output2D.gif'</span>;
+FrameDelay = 0;
+
+<span class="comment">%create arrays for functions to use at (t-1),t,(t+1)</span>
+nextFunc = zeros(length(x), length(y));
+pastFunc = zeros(length(x), length(y));
+
+h = figure;
+<span class="comment">%create the initial function of product of 2 sine waves and plot it</span>
+func = SineInput2D(Ncycles, finalX, initialX, finalY, initialY, Npoints);
+</pre><h2 id="2">Stability Checking</h2><p>This is meant to check the stability of the Finite Difference Function across every update in time. This is done by using the Courant-Friedrichs-Lewy (CFL) Condition. The function checks that the CFL number must be &lt;= 1 or else the function is proven to be unstable. When the program finds out that the given values are unstable then the program will ask for a CFL constant and if a value is valid (i.e. &lt;= 1) then the velocity of the function will be scaled to fit the given CFL from the user.CFL = (PropagationSpeed*tDelta)/xDelta;</p><pre class="codeinput"><span class="keyword">if</span> CFL &gt; 1
+    <span class="comment">%CFL is determined to be unstable, ask for a new CFL and scale the</span>
+    <span class="comment">%speed of the function so the CFL can be the same as the given value as</span>
+    <span class="comment">%long at the given CFL is less than 1</span>
+    fprintf(<span class="string">'Your inputs will create an unstable system. Speed will be automatically adjusted for stability\n\n'</span>);
+    prompt = <span class="string">'Enter desired CFL: '</span>;
+    <span class="comment">%NOTE THIS IS COMMENTED OUT SO THE PUBLISH CAN RUN</span>
+    <span class="comment">%desiredCFL = input(prompt);</span>
+
+    <span class="comment">%THIS IS A DUMMY VARIABLE FOR THE PUBLISH TO RUN</span>
+    desiredCFL = 0.75;
+    <span class="keyword">if</span> desiredCFL &lt;= 1
+        PropagationSpeedX = (desiredCFL*xDelta)/tDelta;
+        PropagationSpeedY = (desiredCFL*yDelta)/tDelta;
+    <span class="keyword">else</span>
+        fprintf(<span class="string">'Not a valid CFL. Exiting Program\n'</span>);
+        <span class="keyword">return</span>
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">Your inputs will create an unstable system. Speed will be automatically adjusted for stability
+
+</pre><h2 id="3">Calculate and Plot Function</h2><pre class="codeinput"><span class="keyword">for</span> t = 1:NtimePoints <span class="comment">%ticks in time</span>
+</pre><pre class="codeinput">    mesh(x, y, func);
+    zlim([-2 2]); <span class="comment">%amplitude of simulations is currently limited to 1</span>
+</pre><img vspace="5" hspace="5" src="FiniteDifference2D_01.png" alt=""> <img vspace="5" hspace="5" src="FiniteDifference2D_02.png" alt=""> <img vspace="5" hspace="5" src="FiniteDifference2D_03.png" alt=""> <h2 id="5">Capture Frame for .GIF output</h2><pre class="codeinput">    drawnow
+    <span class="comment">% Capture the plot as an image</span>
+      frame = getframe(h);
+      im = frame2im(frame);
+      [imind,cm] = rgb2ind(im,256);
+      <span class="comment">% Write to the GIF File</span>
+      <span class="keyword">if</span> t == 1
+          imwrite(imind,cm,filename,<span class="string">'gif'</span>, <span class="string">'Loopcount'</span>,inf);
+      <span class="keyword">else</span>
+          imwrite(imind,cm,filename,<span class="string">'gif'</span>,<span class="string">'WriteMode'</span>,<span class="string">'append'</span>);
+      <span class="keyword">end</span>
+</pre><pre class="codeoutput error">Error using getframe (line 52)
+A valid figure or axes handle must be specified
+
+Error in FiniteDifference2D (line 82)
+      frame = getframe(h); 
+</pre><h2 id="6">Finite Difference Update Equation</h2><pre class="codeinput">    <span class="keyword">for</span> n = 2:(Npoints-1) <span class="comment">%correspond to X</span>
+      <span class="keyword">for</span> m = 2:(Npoints-1) <span class="comment">%correspond to Y</span>
+</pre><pre class="codeinput">          <span class="keyword">if</span> t == 1
+              nextFunc(n,m) = 0.5*Central2DFiniteDiff(PropagationSpeedX,<span class="keyword">...</span>
+                  PropagationSpeedY, tDelta, xDelta, yDelta, func(n+1,m),<span class="keyword">...</span>
+                  func(n,m+1), func(n,m), func(n-1,m), func(n,m-1), 0);
+          <span class="keyword">else</span>
+              nextFunc(n,m) = Central2DFiniteDiff(PropagationSpeedX,<span class="keyword">...</span>
+                  PropagationSpeedY, tDelta, xDelta, yDelta,<span class="keyword">...</span>
+                  func(n+1,m), func(n,m+1), func(n,m), func(n-1,m),<span class="keyword">...</span>
+                  func(n,m-1), pastFunc(n,m));
+          <span class="keyword">end</span>
+</pre><h2 id="8">Force Function to be 0 at Boundaries</h2><pre class="codeinput">          nextFunc(1,m) = 0;
+          nextFunc(end,m) = 0;
+</pre><pre class="codeinput">      <span class="keyword">end</span>
+      nextFunc(n,1) = 0;
+      nextFunc(n,end) = 0;
+    <span class="keyword">end</span>
+</pre><h2 id="10">Swap Function Arrays</h2><p>Future Array (t+1) -&gt; Present Array (t) Present Array (t) -&gt; Past Array (t-1) then delay if needed</p><pre class="codeinput">   pastFunc = func;
+   func = nextFunc;
+
+   pause(FrameDelay);
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><h2 id="12">Central1DFiniteDiff(speedX, speedY, deltaT, deltaX, deltaY, funcAheadX, funcAheadY, func, funcBehindX, funcBehindY, funcBehindT)</h2><pre class="language-matlab">speedX - speed in <span class="string">X</span> <span class="string">direction</span> <span class="string">of</span> <span class="string">the</span> <span class="string">wave</span>
+speedY - speed in <span class="string">Y</span> <span class="string">direction</span> <span class="string">of</span> <span class="string">the</span> <span class="string">wave</span>
+deltaT - time between <span class="string">each</span> <span class="string">time</span> <span class="string">interval</span>
+deltaX - distance between <span class="string">each</span> <span class="string">point</span> <span class="string">in</span> <span class="string">X</span>
+deltaY - distance between <span class="string">each</span> <span class="string">point</span> <span class="string">in</span> <span class="string">Y</span>
+funcAheadX -    f(x+1, y, t)
+funcAheadY -    f(x, y+1, t)
+func -          f(x, y, t)
+funcBehindX -   f(x-1, y, t)
+funcBehindY -   f(x, y-1, t)
+funcBehindT -   f(x, y, t-1)
+</pre><p>This is the main update equation for the Finite Difference Equation for 2 dimensions. This is written to update each point independently so only points should be inputs and a single value will be the output.</p><pre class="codeinput"><span class="keyword">function</span> output4 = Central2DFiniteDiff(speedX, speedY, deltaT, deltaX, <span class="keyword">...</span>
+    deltaY, funcAheadX, funcAheadY, func, funcBehindX, funcBehindY, funcBehindT)
+
+<span class="keyword">arguments</span>
+    speedX (1,:) {mustBeNumeric, mustBeFinite, mustBePositive}
+    speedY (1,:) {mustBeNumeric, mustBeFinite, mustBePositive}
+    deltaT (1,:) {mustBeNumeric, mustBeFinite}
+    deltaX (1,:) {mustBeNumeric, mustBeFinite}
+    deltaY (1,:) {mustBeNumeric, mustBeFinite}
+    funcAheadX (:,:) {mustBeNumeric, mustBeFinite}
+    funcAheadY (:,:) {mustBeNumeric, mustBeFinite}
+    func (:,:) {mustBeNumeric, mustBeFinite}
+    funcBehindX (:,:) {mustBeNumeric, mustBeFinite}
+    funcBehindY (:,:) {mustBeNumeric, mustBeFinite}
+    funcBehindT (:,:) {mustBeNumeric, mustBeFinite}
+<span class="keyword">end</span>
+
+output4 = (((speedX^2)*(deltaT^2))/(deltaX^2))*(funcAheadX <span class="keyword">...</span>
+    - 2*func + funcBehindX) + (((speedY^2)*(deltaT^2))/(deltaY^2))*(funcAheadY <span class="keyword">...</span>
+    - 2*func + funcBehindY) + 2*func - funcBehindT;
+<span class="keyword">end</span>
+</pre><h2 id="13">SineInput2D(Cycles, Xfinal, Xinitial, Yfinal, Yinitial, NumberOfPoints)</h2><pre class="language-matlab">Cycles - total amount <span class="string">of</span> <span class="string">sine</span> <span class="string">cycles</span> <span class="string">between</span> <span class="string">the</span> <span class="string">boundaries</span> <span class="string">given</span>
+Xfinal - value of <span class="string">the</span> <span class="string">last</span> <span class="string">X</span> <span class="string">point</span>
+Xinitial - value of <span class="string">the</span> <span class="string">first</span> <span class="string">X</span> <span class="string">point</span>
+Yfinal - value of <span class="string">the</span> <span class="string">last</span> <span class="string">Y</span> <span class="string">point</span>
+Yinitial - value of <span class="string">the</span> <span class="string">first</span> <span class="string">Y</span> <span class="string">point</span>
+NumberOfPoints - the total <span class="string">number</span> <span class="string">of</span> <span class="string">points</span> <span class="string">for</span> <span class="string">both</span> <span class="string">X</span> <span class="string">and</span> <span class="string">Y</span> <span class="string">directions</span>
+</pre><p>Creates an initial state of the function for the update equation of the Finite Difference Method to work with. This input will be N by N matrix the size (N = NumberOfPoints). The function will take the form of sin(x)sin(y) shifted and scaled so the input has the given amount of cycles in both the X and Y direction.</p><pre class="codeinput"><span class="keyword">function</span> output3 = SineInput2D(Cycles, Xfinal, Xinitial, Yfinal, Yinitial, NumberOfPoints)
+
+<span class="keyword">arguments</span>
+   Cycles (1,:) {mustBeNumeric, mustBeFinite, mustBePositive}
+   Xfinal (1,:) {mustBeNumeric, mustBeFinite}
+   Xinitial (1,:) {mustBeNumeric, mustBeFinite}
+   Yfinal (1,:) {mustBeNumeric, mustBeFinite}
+   Yinitial (1,:) {mustBeNumeric, mustBeFinite}
+   NumberOfPoints (1,:) {mustBeNumeric, mustBeFinite, mustBeNonzero}
+<span class="keyword">end</span>
+
+x = linspace(Xinitial,Xfinal,NumberOfPoints);
+y = linspace(Yinitial,Yfinal,NumberOfPoints);
+output3 = sin(((Cycles*2*pi)/Xfinal)*(x-Xinitial)).*sin(((Cycles*2*pi)/Yfinal)*(y'-Yinitial));
+<span class="keyword">end</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% FiniteDifference2D.m
+% This is the simulation of a sin(x)sin(y) that is numerically solved with
+% the Finite Difference Method in 2D. The wave will be modelled as a
+% standing wave in space with the wave being fixed to 0 at all boundaries. 
+%% Define Inputs
+close all;
+
+%Spatial Inputs
+initialX = 0;
+finalX = 3;
+initialY = 0;
+finalY = 3;
+Npoints = 50; %number of points between the initial and final X, Y
+Ncycles = 1.5; %number of full sine cycles
+
+%space vectors
+x = linspace(initialX,finalX,Npoints);
+y = linspace(initialY,finalY,Npoints);
+
+%set inputs for the time
+initialTime = 0;
+finalTime = 1;
+NtimePoints = 4; 
+
+%Velocity is written to be the same for the X and Y direction but I wrote
+%this so I can easily start turning this into different X and Y speeds
+PropagationSpeed = 300; 
+PropagationSpeedX = PropagationSpeed; 
+PropagationSpeedY = PropagationSpeed; 
+
+tDelta = (finalTime-initialTime)/NtimePoints;
+xDelta = (finalX-initialX)/Npoints;
+yDelta = (finalY-initialY)/Npoints;
+
+filename = 'output2D.gif';
+FrameDelay = 0;
+
+%create arrays for functions to use at (t-1),t,(t+1)
+nextFunc = zeros(length(x), length(y));
+pastFunc = zeros(length(x), length(y));
+
+h = figure;
+%create the initial function of product of 2 sine waves and plot it
+func = SineInput2D(Ncycles, finalX, initialX, finalY, initialY, Npoints);
+
+%% Stability Checking
+% This is meant to check the stability of the Finite Difference Function
+% across every update in time. This is done by using the
+% Courant-Friedrichs-Lewy (CFL) Condition. The function checks that 
+% the CFL number must be <= 1 or else the function is proven
+% to be unstable. When the program finds out that the given values are
+% unstable then the program will ask for a CFL constant and if a value is
+% valid (i.e. <= 1) then the velocity of the function will be scaled to fit
+% the given CFL from the user.CFL = (PropagationSpeed*tDelta)/xDelta;
+if CFL > 1
+    %CFL is determined to be unstable, ask for a new CFL and scale the
+    %speed of the function so the CFL can be the same as the given value as
+    %long at the given CFL is less than 1
+    fprintf('Your inputs will create an unstable system. Speed will be automatically adjusted for stability\n\n');
+    prompt = 'Enter desired CFL: ';
+    %NOTE THIS IS COMMENTED OUT SO THE PUBLISH CAN RUN
+    %desiredCFL = input(prompt);
+    
+    %THIS IS A DUMMY VARIABLE FOR THE PUBLISH TO RUN
+    desiredCFL = 0.75;
+    if desiredCFL <= 1
+        PropagationSpeedX = (desiredCFL*xDelta)/tDelta;
+        PropagationSpeedY = (desiredCFL*yDelta)/tDelta;
+    else
+        fprintf('Not a valid CFL. Exiting Program\n');
+        return
+    end
+end
+
+%% Calculate and Plot Function
+for t = 1:NtimePoints %ticks in time
+    mesh(x, y, func);
+    zlim([-2 2]); %amplitude of simulations is currently limited to 1
+%% Capture Frame for .GIF output
+    drawnow
+    % Capture the plot as an image 
+      frame = getframe(h); 
+      im = frame2im(frame); 
+      [imind,cm] = rgb2ind(im,256); 
+      % Write to the GIF File 
+      if t == 1 
+          imwrite(imind,cm,filename,'gif', 'Loopcount',inf); 
+      else 
+          imwrite(imind,cm,filename,'gif','WriteMode','append'); 
+      end
+%% Finite Difference Update Equation
+    for n = 2:(Npoints-1) %correspond to X
+      for m = 2:(Npoints-1) %correspond to Y
+          if t == 1 
+              nextFunc(n,m) = 0.5*Central2DFiniteDiff(PropagationSpeedX,... 
+                  PropagationSpeedY, tDelta, xDelta, yDelta, func(n+1,m),...
+                  func(n,m+1), func(n,m), func(n-1,m), func(n,m-1), 0);
+          else
+              nextFunc(n,m) = Central2DFiniteDiff(PropagationSpeedX,...
+                  PropagationSpeedY, tDelta, xDelta, yDelta,...
+                  func(n+1,m), func(n,m+1), func(n,m), func(n-1,m),...
+                  func(n,m-1), pastFunc(n,m));
+          end
+    %% Force Function to be 0 at Boundaries
+          nextFunc(1,m) = 0;
+          nextFunc(end,m) = 0;
+      end
+      nextFunc(n,1) = 0;
+      nextFunc(n,end) = 0;
+    end
+    %% Swap Function Arrays
+    % Future Array (t+1) -> Present Array (t)
+    % Present Array (t) -> Past Array (t-1)
+    % then delay if needed
+   pastFunc = func; 
+   func = nextFunc; 
+   
+   pause(FrameDelay);
+end
+%% Central1DFiniteDiff(speedX, speedY, deltaT, deltaX, deltaY, funcAheadX, funcAheadY, func, funcBehindX, funcBehindY, funcBehindT) 
+%   speedX - speed in X direction of the wave
+%   speedY - speed in Y direction of the wave
+%   deltaT - time between each time interval
+%   deltaX - distance between each point in X
+%   deltaY - distance between each point in Y
+%   funcAheadX -    f(x+1, y, t)
+%   funcAheadY -    f(x, y+1, t)
+%   func -          f(x, y, t)
+%   funcBehindX -   f(x-1, y, t)
+%   funcBehindY -   f(x, y-1, t)
+%   funcBehindT -   f(x, y, t-1)
+%
+% This is the main update equation for the Finite Difference Equation for 2
+% dimensions. This is written to update each point independently so only
+% points should be inputs and a single value will be the output.
+function output4 = Central2DFiniteDiff(speedX, speedY, deltaT, deltaX, ...
+    deltaY, funcAheadX, funcAheadY, func, funcBehindX, funcBehindY, funcBehindT)
+
+arguments
+    speedX (1,:) {mustBeNumeric, mustBeFinite, mustBePositive}
+    speedY (1,:) {mustBeNumeric, mustBeFinite, mustBePositive}
+    deltaT (1,:) {mustBeNumeric, mustBeFinite}
+    deltaX (1,:) {mustBeNumeric, mustBeFinite}
+    deltaY (1,:) {mustBeNumeric, mustBeFinite}
+    funcAheadX (:,:) {mustBeNumeric, mustBeFinite}
+    funcAheadY (:,:) {mustBeNumeric, mustBeFinite}
+    func (:,:) {mustBeNumeric, mustBeFinite}
+    funcBehindX (:,:) {mustBeNumeric, mustBeFinite}
+    funcBehindY (:,:) {mustBeNumeric, mustBeFinite}
+    funcBehindT (:,:) {mustBeNumeric, mustBeFinite}
+end
+
+output4 = (((speedX^2)*(deltaT^2))/(deltaX^2))*(funcAheadX ...
+    - 2*func + funcBehindX) + (((speedY^2)*(deltaT^2))/(deltaY^2))*(funcAheadY ...
+    - 2*func + funcBehindY) + 2*func - funcBehindT; 
+end
+%% SineInput2D(Cycles, Xfinal, Xinitial, Yfinal, Yinitial, NumberOfPoints) 
+%   Cycles - total amount of sine cycles between the boundaries given
+%   Xfinal - value of the last X point
+%   Xinitial - value of the first X point
+%   Yfinal - value of the last Y point
+%   Yinitial - value of the first Y point
+%   NumberOfPoints - the total number of points for both X and Y directions
+%
+% Creates an initial state of the function for the update equation of the
+% Finite Difference Method to work with. This input will be N by N matrix
+% the size (N = NumberOfPoints). The function will take the form of
+% sin(x)sin(y) shifted and scaled so the input has the given amount of
+% cycles in both the X and Y direction.
+function output3 = SineInput2D(Cycles, Xfinal, Xinitial, Yfinal, Yinitial, NumberOfPoints)
+
+arguments
+   Cycles (1,:) {mustBeNumeric, mustBeFinite, mustBePositive}
+   Xfinal (1,:) {mustBeNumeric, mustBeFinite}
+   Xinitial (1,:) {mustBeNumeric, mustBeFinite}
+   Yfinal (1,:) {mustBeNumeric, mustBeFinite}
+   Yinitial (1,:) {mustBeNumeric, mustBeFinite}
+   NumberOfPoints (1,:) {mustBeNumeric, mustBeFinite, mustBeNonzero}
+end
+
+x = linspace(Xinitial,Xfinal,NumberOfPoints);
+y = linspace(Yinitial,Yfinal,NumberOfPoints);
+output3 = sin(((Cycles*2*pi)/Xfinal)*(x-Xinitial)).*sin(((Cycles*2*pi)/Yfinal)*(y'-Yinitial));
+end
+##### SOURCE END #####
+--></body></html>

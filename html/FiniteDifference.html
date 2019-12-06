@@ -1,0 +1,358 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>FiniteDifference.m</title><meta name="generator" content="MATLAB 9.7"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2019-12-05"><meta name="DC.source" content="FiniteDifference.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>FiniteDifference.m</h1><!--introduction--><p>This function is written to simulate a standing wave in 1 dimensional space with the Finite Difference Method.</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Declared Input Values</a></li><li><a href="#2">Create Initial Input</a></li><li><a href="#3">Stability Checking</a></li><li><a href="#4">Update Loop in Time</a></li><li><a href="#6">Capture Frames for .GIF Output</a></li><li><a href="#7">Finite Difference Update Equation</a></li><li><a href="#8">Force Function to be 0 at Boundaries</a></li><li><a href="#9">Swap Function Arrays</a></li><li><a href="#11">Central1DFiniteDiff(speed, deltaT, deltaX, funcAheadX, func, funcBehindX, funcBehindT)</a></li><li><a href="#12">SineInput(Cycles, Xfinal, Xinitial, NumberOfPoints)</a></li></ul></div><h2 id="1">Declared Input Values</h2><pre class="codeinput">close <span class="string">all</span>;
+
+<span class="comment">% Spacial Inputs</span>
+initialX = 0;
+finalX = 3;
+Npoints = 50; <span class="comment">%number of points between the initial and final X</span>
+Ncycles = 1.5; <span class="comment">%number of full sine cycles</span>
+
+<span class="comment">%set inputs for the time</span>
+initialTime = 0;
+finalTime = 5;
+NtimePoints = 4;
+
+<span class="comment">% Group Velocity of the Wave</span>
+PropagationSpeed = 300;
+
+tDelta = (finalTime-initialTime)/NtimePoints;
+xDelta = (finalX-initialX)/Npoints;
+
+<span class="comment">%filename of gif output of the program</span>
+filename = <span class="string">'output.gif'</span>;
+
+<span class="comment">%delay value between each frame of the gif</span>
+FrameDelay = 0;
+h = figure;
+x = linspace(initialX,finalX,Npoints);
+</pre><img vspace="5" hspace="5" src="FiniteDifference_01.png" alt=""> <h2 id="2">Create Initial Input</h2><p>Also create arrays for the function which we use as pastFunc -&gt;   f(x,t-1) func -&gt;       f(x, t) nextFunc -&gt;   f(x,t+1)</p><pre class="codeinput">func = SineInput(Ncycles, finalX, initialX, Npoints);
+nextFunc = zeros(length(func));
+pastFunc = zeros(length(func));
+</pre><h2 id="3">Stability Checking</h2><p>This is meant to check the stability of the Finite Difference Function across every update in time. This is done by using the Courant-Friedrichs-Lewy (CFL) Condition. Because this function is in 1 dimension then the CFL number must be &lt;= 1 or else the function is proven to be unstable. When the program finds out that the given values are unstable then the program will ask for a CFL constant and if a value is valid (i.e. &lt;= 1) then the velocity of the function will be scaled to fit the given CFL from the user.</p><pre class="codeinput">CFL = (PropagationSpeed*tDelta)/xDelta;
+<span class="keyword">if</span> CFL &gt; 1
+    fprintf(<span class="string">'Your inputs will create an unstable system. Speed will be automatically adjusted for stability\n\n'</span>);
+    prompt = <span class="string">'Enter desired CFL: '</span>;
+    <span class="comment">%NOTE THIS IS COMMENTED OUT SO THE PUBLISH CAN RUN</span>
+    <span class="comment">%desiredCFL = input(prompt);</span>
+
+    <span class="comment">%THIS IS A DUMMY VARIABLE FOR THE PUBLISH TO RUN</span>
+    desiredCFL = 0.75;
+    <span class="keyword">if</span> desiredCFL &lt;= 1
+        PropagationSpeed = (desiredCFL*xDelta)/tDelta;
+    <span class="keyword">else</span>
+        fprintf(<span class="string">'Not a valid CFL. Exiting Program\n'</span>);
+        <span class="keyword">return</span>
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><pre class="codeoutput">Your inputs will create an unstable system. Speed will be automatically adjusted for stability
+
+</pre><h2 id="4">Update Loop in Time</h2><pre class="codeinput"><span class="keyword">for</span> t = 1:(NtimePoints)
+</pre><pre class="codeinput">    <span class="comment">%plot the new output</span>
+    plot(x, func);
+    <span class="comment">%This would have to be adjusted if amplitude is adjusted</span>
+    ylim([-2 2]);
+</pre><img vspace="5" hspace="5" src="FiniteDifference_02.png" alt=""> <img vspace="5" hspace="5" src="FiniteDifference_03.png" alt=""> <img vspace="5" hspace="5" src="FiniteDifference_04.png" alt=""> <img vspace="5" hspace="5" src="FiniteDifference_05.png" alt=""> <h2 id="6">Capture Frames for .GIF Output</h2><pre class="codeinput">    drawnow
+      <span class="comment">% Capture the plot as an image</span>
+      frame = getframe(h);
+      im = frame2im(frame);
+      [imind,cm] = rgb2ind(im,256);
+      <span class="comment">% Write to the GIF File</span>
+      <span class="keyword">if</span> t == 1
+          imwrite(imind,cm,filename,<span class="string">'gif'</span>, <span class="string">'Loopcount'</span>,inf);
+      <span class="keyword">else</span>
+          imwrite(imind,cm,filename,<span class="string">'gif'</span>,<span class="string">'WriteMode'</span>,<span class="string">'append'</span>);
+      <span class="keyword">end</span>
+</pre><h2 id="7">Finite Difference Update Equation</h2><p>Note: the update equation must be multiplied by 0.5 and the f(x,t+1) for the initial time must be set to 0. This must be done for the first update to be correct.</p><pre class="codeinput">    <span class="keyword">for</span> n = 2:(Npoints-1)
+        <span class="keyword">if</span> t == 1
+            nextFunc(n)= 0.5*Central1DFiniteDiff(PropagationSpeed, tDelta, xDelta, func(n+1), func(n), func(n-1), 0);
+        <span class="keyword">else</span>
+            nextFunc(n) = Central1DFiniteDiff(PropagationSpeed, tDelta, xDelta, func(n+1), func(n), func(n-1), pastFunc(n));
+        <span class="keyword">end</span>
+    <span class="keyword">end</span>
+</pre><h2 id="8">Force Function to be 0 at Boundaries</h2><pre class="codeinput">    nextFunc(1) = 0;
+    nextFunc(end) = 0;
+</pre><h2 id="9">Swap Function Arrays</h2><p>Future Array (t+1) -&gt; Present Array (t) Present Array (t) -&gt; Past Array (t-1) then delay if needed</p><pre class="codeinput">    pastFunc = func;
+    func = nextFunc;
+
+    pause(FrameDelay);
+</pre><pre class="codeinput"><span class="keyword">end</span>
+</pre><h2 id="11">Central1DFiniteDiff(speed, deltaT, deltaX, funcAheadX, func, funcBehindX, funcBehindT)</h2><pre class="language-matlab">speed - velocity of <span class="string">the</span> <span class="string">wave</span>
+deltaT - change in <span class="string">time</span> <span class="string">between</span> <span class="string">the</span> <span class="string">points</span> <span class="string">of</span> <span class="string">the</span> <span class="string">function</span>
+deltaX - change in <span class="string">space</span> <span class="string">between</span> <span class="string">the</span> <span class="string">points</span> <span class="string">of</span> <span class="string">the</span> <span class="string">function</span>
+funcAheadX - f(x+1,t)
+func - f(x,t)
+funcBehindX - f(x-1,t)
+funcBehindT - f(x,t-1)
+</pre><pre class="language-matlab">This <span class="string">is</span> <span class="string">the</span> <span class="string">update</span> <span class="string">equation</span> <span class="string">for</span> <span class="string">the</span> <span class="string">1D</span> <span class="string">standing</span> <span class="string">wave</span> <span class="string">with</span> <span class="string">the</span> <span class="string">Finite</span>
+Difference <span class="string">Method.</span> <span class="string">The</span> <span class="string">equation</span> <span class="string">is</span> <span class="string">based</span> <span class="string">on</span> <span class="string">the</span> <span class="string">acceleration</span> <span class="string">of</span> <span class="string">the</span>
+wave <span class="string">in</span> <span class="string">discrete</span> <span class="string">points.</span> <span class="string">This</span> <span class="string">equation</span> <span class="string">itself</span> <span class="string">would</span> <span class="string">have</span> <span class="string">to</span> <span class="string">be</span> <span class="string">adjusted</span>
+<span class="keyword">for</span> the initial <span class="string">run</span> <span class="string">of</span> <span class="string">the</span> <span class="string">function</span> <span class="string">from</span> <span class="string">t0</span> <span class="string">to</span> <span class="string">t1</span>; <span class="keyword">for</span> that process <span class="string">the</span>
+funcBehindT <span class="string">will</span> <span class="string">be</span> <span class="string">set</span> <span class="string">to</span> <span class="string">0</span> <span class="string">and</span> <span class="string">the</span> <span class="string">output</span> <span class="string">of</span> <span class="string">this</span> <span class="string">function</span> <span class="string">must</span> <span class="string">be</span>
+multiplied <span class="string">by</span> <span class="string">0.5</span>
+</pre><pre class="codeinput"><span class="keyword">function</span> output2 = Central1DFiniteDiff(speed, deltaT, deltaX, <span class="keyword">...</span>
+    funcAheadX, func, funcBehindX, funcBehindT)
+
+<span class="keyword">arguments</span>
+   speed (1,:) {mustBeNumeric, mustBeFinite, mustBePositive}
+   deltaT (1,:) {mustBeNumeric, mustBeFinite}
+   deltaX (1,:) {mustBeNumeric, mustBeFinite}
+   funcAheadX {mustBeNumeric, mustBeFinite}
+   func {mustBeNumeric, mustBeFinite}
+   funcBehindX {mustBeNumeric, mustBeFinite}
+   funcBehindT {mustBeNumeric, mustBeFinite}
+<span class="keyword">end</span>
+
+    output2 = (((speed^2)*(deltaT^2))/(deltaX^2))*(funcAheadX <span class="keyword">...</span>
+    - 2*func + funcBehindX) + 2*func - funcBehindT;
+<span class="keyword">end</span>
+</pre><h2 id="12">SineInput(Cycles, Xfinal, Xinitial, NumberOfPoints)</h2><pre class="language-matlab">Cycles - How many <span class="string">full</span> <span class="string">cycles</span> <span class="string">the</span> <span class="string">output</span> <span class="string">array</span> <span class="string">must</span> <span class="string">complete</span> <span class="string">in</span> <span class="string">the</span>
+given <span class="string">amount</span> <span class="string">of</span> <span class="string">space</span>
+Xfinal - the value <span class="string">of</span> <span class="string">the</span> <span class="string">final</span> <span class="string">point</span> <span class="string">in</span> <span class="string">space</span> <span class="string">of</span> <span class="string">the</span> <span class="string">array</span>
+Xinitial - the value <span class="string">of</span> <span class="string">the</span> <span class="string">initial</span> <span class="string">point</span> <span class="string">in</span> <span class="string">the</span> <span class="string">space</span> <span class="string">of</span> <span class="string">the</span> <span class="string">array</span>
+NumberOfPoints - how many <span class="string">discrete</span> <span class="string">points</span> <span class="string">the</span> <span class="string">output</span> <span class="string">array</span> <span class="string">must</span> <span class="string">have</span>
+</pre><pre class="language-matlab">Creates <span class="string">a</span> <span class="string">input</span> <span class="string">for</span> <span class="string">the</span> <span class="string">Finite</span> <span class="string">Difference</span> <span class="string">update</span> <span class="string">equation</span> <span class="string">to</span> <span class="string">use</span> <span class="string">as</span> <span class="string">the</span>
+initial <span class="string">condition</span> <span class="string">of</span> <span class="string">the</span> <span class="string">function.</span> <span class="string">This</span> <span class="string">input</span> <span class="string">is</span> <span class="string">a</span> <span class="string">simple</span> <span class="string">sine</span> <span class="string">wave</span>
+that <span class="string">is</span> <span class="string">fixed</span> <span class="string">to</span> <span class="string">be</span> <span class="string">0</span> <span class="string">at</span> <span class="string">the</span> <span class="string">boundaries</span> <span class="string">of</span> <span class="string">the</span> <span class="string">given</span> <span class="string">space</span>
+</pre><pre class="codeinput"><span class="keyword">function</span> output = SineInput(Cycles, Xfinal, Xinitial, NumberOfPoints)
+
+<span class="keyword">arguments</span>
+   Cycles (1,:) {mustBeNumeric, mustBeFinite, mustBePositive}
+   Xfinal (1,:) {mustBeNumeric, mustBeFinite}
+   Xinitial (1,:) {mustBeNumeric, mustBeFinite}
+   NumberOfPoints (1,:) {mustBeNumeric, mustBeFinite, mustBePositive}
+<span class="keyword">end</span>
+
+    x = linspace(Xinitial,Xfinal,NumberOfPoints);
+    output = sin(((Cycles*2*pi)/Xfinal)*(x-Xinitial));
+<span class="keyword">end</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% FiniteDifference.m
+% This function is written to simulate a standing wave in 1 dimensional
+% space with the Finite Difference Method. 
+
+%% Declared Input Values
+close all; 
+
+% Spacial Inputs
+initialX = 0;
+finalX = 3;
+Npoints = 50; %number of points between the initial and final X
+Ncycles = 1.5; %number of full sine cycles
+
+%set inputs for the time
+initialTime = 0;
+finalTime = 5;
+NtimePoints = 4; 
+
+% Group Velocity of the Wave
+PropagationSpeed = 300;
+
+tDelta = (finalTime-initialTime)/NtimePoints;
+xDelta = (finalX-initialX)/Npoints;
+
+%filename of gif output of the program
+filename = 'output.gif';
+
+%delay value between each frame of the gif
+FrameDelay = 0;
+h = figure;
+x = linspace(initialX,finalX,Npoints);
+%% Create Initial Input
+% Also create arrays for the function which we use as 
+% pastFunc ->   f(x,t-1)
+% func ->       f(x, t)
+% nextFunc ->   f(x,t+1)
+func = SineInput(Ncycles, finalX, initialX, Npoints);
+nextFunc = zeros(length(func));
+pastFunc = zeros(length(func));
+%% Stability Checking
+% This is meant to check the stability of the Finite Difference Function
+% across every update in time. This is done by using the
+% Courant-Friedrichs-Lewy (CFL) Condition. Because this function is in 1
+% dimension then the CFL number must be <= 1 or else the function is proven
+% to be unstable. When the program finds out that the given values are
+% unstable then the program will ask for a CFL constant and if a value is
+% valid (i.e. <= 1) then the velocity of the function will be scaled to fit
+% the given CFL from the user.
+CFL = (PropagationSpeed*tDelta)/xDelta;
+if CFL > 1
+    fprintf('Your inputs will create an unstable system. Speed will be automatically adjusted for stability\n\n');
+    prompt = 'Enter desired CFL: ';
+    %NOTE THIS IS COMMENTED OUT SO THE PUBLISH CAN RUN
+    %desiredCFL = input(prompt);
+    
+    %THIS IS A DUMMY VARIABLE FOR THE PUBLISH TO RUN
+    desiredCFL = 0.75;
+    if desiredCFL <= 1
+        PropagationSpeed = (desiredCFL*xDelta)/tDelta;
+    else
+        fprintf('Not a valid CFL. Exiting Program\n');
+        return
+    end
+end
+%% Update Loop in Time
+for t = 1:(NtimePoints)
+    %plot the new output
+    plot(x, func);
+    %This would have to be adjusted if amplitude is adjusted
+    ylim([-2 2]);    
+    %% Capture Frames for .GIF Output
+    drawnow 
+      % Capture the plot as an image 
+      frame = getframe(h); 
+      im = frame2im(frame); 
+      [imind,cm] = rgb2ind(im,256); 
+      % Write to the GIF File 
+      if t == 1 
+          imwrite(imind,cm,filename,'gif', 'Loopcount',inf); 
+      else 
+          imwrite(imind,cm,filename,'gif','WriteMode','append'); 
+      end
+    %% Finite Difference Update Equation
+    % Note: the update equation must be multiplied by 0.5 and the f(x,t+1)
+    % for the initial time must be set to 0. This must be done for the
+    % first update to be correct.
+    for n = 2:(Npoints-1)
+        if t == 1
+            nextFunc(n)= 0.5*Central1DFiniteDiff(PropagationSpeed, tDelta, xDelta, func(n+1), func(n), func(n-1), 0);
+        else
+            nextFunc(n) = Central1DFiniteDiff(PropagationSpeed, tDelta, xDelta, func(n+1), func(n), func(n-1), pastFunc(n));
+        end
+    end
+ 
+    %% Force Function to be 0 at Boundaries
+    nextFunc(1) = 0;
+    nextFunc(end) = 0;
+
+    %% Swap Function Arrays
+    % Future Array (t+1) -> Present Array (t)
+    % Present Array (t) -> Past Array (t-1)
+    % then delay if needed
+    pastFunc = func; 
+    func = nextFunc; 
+
+    pause(FrameDelay);
+end
+%% Central1DFiniteDiff(speed, deltaT, deltaX, funcAheadX, func, funcBehindX, funcBehindT)
+%   speed - velocity of the wave 
+%   deltaT - change in time between the points of the function
+%   deltaX - change in space between the points of the function 
+%   funcAheadX - f(x+1,t) 
+%   func - f(x,t) 
+%   funcBehindX - f(x-1,t) 
+%   funcBehindT - f(x,t-1)
+%
+%   This is the update equation for the 1D standing wave with the Finite
+%   Difference Method. The equation is based on the acceleration of the
+%   wave in discrete points. This equation itself would have to be adjusted
+%   for the initial run of the function from t0 to t1; for that process the
+%   funcBehindT will be set to 0 and the output of this function must be
+%   multiplied by 0.5 
+function output2 = Central1DFiniteDiff(speed, deltaT, deltaX, ...
+    funcAheadX, func, funcBehindX, funcBehindT)
+
+arguments
+   speed (1,:) {mustBeNumeric, mustBeFinite, mustBePositive}
+   deltaT (1,:) {mustBeNumeric, mustBeFinite}
+   deltaX (1,:) {mustBeNumeric, mustBeFinite}
+   funcAheadX {mustBeNumeric, mustBeFinite}
+   func {mustBeNumeric, mustBeFinite}
+   funcBehindX {mustBeNumeric, mustBeFinite}
+   funcBehindT {mustBeNumeric, mustBeFinite}
+end
+
+    output2 = (((speed^2)*(deltaT^2))/(deltaX^2))*(funcAheadX ...
+    - 2*func + funcBehindX) + 2*func - funcBehindT; 
+end
+%% SineInput(Cycles, Xfinal, Xinitial, NumberOfPoints)
+%   Cycles - How many full cycles the output array must complete in the 
+%   given amount of space
+%   Xfinal - the value of the final point in space of the array
+%   Xinitial - the value of the initial point in the space of the array
+%   NumberOfPoints - how many discrete points the output array must have
+%    
+%   Creates a input for the Finite Difference update equation to use as the
+%   initial condition of the function. This input is a simple sine wave
+%   that is fixed to be 0 at the boundaries of the given space
+function output = SineInput(Cycles, Xfinal, Xinitial, NumberOfPoints)
+
+arguments
+   Cycles (1,:) {mustBeNumeric, mustBeFinite, mustBePositive}
+   Xfinal (1,:) {mustBeNumeric, mustBeFinite}
+   Xinitial (1,:) {mustBeNumeric, mustBeFinite}
+   NumberOfPoints (1,:) {mustBeNumeric, mustBeFinite, mustBePositive}
+end
+
+    x = linspace(Xinitial,Xfinal,NumberOfPoints);
+    output = sin(((Cycles*2*pi)/Xfinal)*(x-Xinitial));
+end
+##### SOURCE END #####
+--></body></html>

@@ -20,7 +20,7 @@ y = linspace(initialY,finalY,Npoints);
 %set inputs for the time
 initialTime = 0;
 finalTime = 1;
-NtimePoints = 50; 
+NtimePoints = 4; 
 
 %Velocity is written to be the same for the X and Y direction but I wrote
 %this so I can easily start turning this into different X and Y speeds
@@ -58,7 +58,11 @@ if CFL > 1
     %long at the given CFL is less than 1
     fprintf('Your inputs will create an unstable system. Speed will be automatically adjusted for stability\n\n');
     prompt = 'Enter desired CFL: ';
-    desiredCFL = input(prompt);
+    %NOTE THIS IS COMMENTED OUT SO THE PUBLISH CAN RUN
+    %desiredCFL = input(prompt);
+    
+    %THIS IS A DUMMY VARIABLE FOR THE PUBLISH TO RUN
+    desiredCFL = 0.75;
     if desiredCFL <= 1
         PropagationSpeedX = (desiredCFL*xDelta)/tDelta;
         PropagationSpeedY = (desiredCFL*yDelta)/tDelta;
@@ -72,6 +76,7 @@ end
 for t = 1:NtimePoints %ticks in time
     mesh(x, y, func);
     zlim([-2 2]); %amplitude of simulations is currently limited to 1
+%% Capture Frame for .GIF output
     drawnow
     % Capture the plot as an image 
       frame = getframe(h); 
@@ -82,7 +87,8 @@ for t = 1:NtimePoints %ticks in time
           imwrite(imind,cm,filename,'gif', 'Loopcount',inf); 
       else 
           imwrite(imind,cm,filename,'gif','WriteMode','append'); 
-      end      
+      end
+%% Finite Difference Update Equation
     for n = 2:(Npoints-1) %correspond to X
       for m = 2:(Npoints-1) %correspond to Y
           if t == 1 
@@ -95,21 +101,22 @@ for t = 1:NtimePoints %ticks in time
                   func(n+1,m), func(n,m+1), func(n,m), func(n-1,m),...
                   func(n,m-1), pastFunc(n,m));
           end
+    %% Force Function to be 0 at Boundaries
           nextFunc(1,m) = 0;
           nextFunc(end,m) = 0;
       end
       nextFunc(n,1) = 0;
       nextFunc(n,end) = 0;
     end
-   %update the function arrays
+    %% Swap Function Arrays
+    % Future Array (t+1) -> Present Array (t)
+    % Present Array (t) -> Past Array (t-1)
+    % then delay if needed
    pastFunc = func; 
    func = nextFunc; 
    
    pause(FrameDelay);
 end
-
-function output4 = Central2DFiniteDiff(speedX, speedY, deltaT, deltaX, ...
-    deltaY, funcAheadX, funcAheadY, func, funcBehindX, funcBehindY, funcBehindT)
 %% Central1DFiniteDiff(speedX, speedY, deltaT, deltaX, deltaY, funcAheadX, funcAheadY, func, funcBehindX, funcBehindY, funcBehindT) 
 %   speedX - speed in X direction of the wave
 %   speedY - speed in Y direction of the wave
@@ -126,6 +133,9 @@ function output4 = Central2DFiniteDiff(speedX, speedY, deltaT, deltaX, ...
 % This is the main update equation for the Finite Difference Equation for 2
 % dimensions. This is written to update each point independently so only
 % points should be inputs and a single value will be the output.
+function output4 = Central2DFiniteDiff(speedX, speedY, deltaT, deltaX, ...
+    deltaY, funcAheadX, funcAheadY, func, funcBehindX, funcBehindY, funcBehindT)
+
 arguments
     speedX (1,:) {mustBeNumeric, mustBeFinite, mustBePositive}
     speedY (1,:) {mustBeNumeric, mustBeFinite, mustBePositive}
@@ -144,8 +154,6 @@ output4 = (((speedX^2)*(deltaT^2))/(deltaX^2))*(funcAheadX ...
     - 2*func + funcBehindX) + (((speedY^2)*(deltaT^2))/(deltaY^2))*(funcAheadY ...
     - 2*func + funcBehindY) + 2*func - funcBehindT; 
 end
-
-function output3 = SineInput2D(Cycles, Xfinal, Xinitial, Yfinal, Yinitial, NumberOfPoints)
 %% SineInput2D(Cycles, Xfinal, Xinitial, Yfinal, Yinitial, NumberOfPoints) 
 %   Cycles - total amount of sine cycles between the boundaries given
 %   Xfinal - value of the last X point
@@ -159,6 +167,8 @@ function output3 = SineInput2D(Cycles, Xfinal, Xinitial, Yfinal, Yinitial, Numbe
 % the size (N = NumberOfPoints). The function will take the form of
 % sin(x)sin(y) shifted and scaled so the input has the given amount of
 % cycles in both the X and Y direction.
+function output3 = SineInput2D(Cycles, Xfinal, Xinitial, Yfinal, Yinitial, NumberOfPoints)
+
 arguments
    Cycles (1,:) {mustBeNumeric, mustBeFinite, mustBePositive}
    Xfinal (1,:) {mustBeNumeric, mustBeFinite}

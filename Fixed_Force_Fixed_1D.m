@@ -1,7 +1,10 @@
-%Fixed_Force_Fixed_1D by Adam Gleichman
-% Fixed Force Fixed 1D String setup: created on 11/16/2019
-% Test Ideas I should think about
-%       Is there a way to break the source point?
+%% Fixed_Force_Fixed_1D.m
+% This is meant to model a wave traveling from a source point to a fixed
+% boundary. I realized that my old way of adjusting the CFL when the CFL
+% condition was not met by changing the speed of the propagating wave was
+% creating the situation where the wave was never meeting the boundary so I
+% do not want to publish this as complete software yet.
+
 close all;
 
 filename = 'FixedForceFixed1D.gif';
@@ -90,7 +93,7 @@ for t = 1:NtimePoints
     nextFunc(sourcePt) = sin(frequency*2*pi*t*tDelta);
     
     %force the fixed boundary conditions
-    % this might ultimately be redundant
+    %(this might ultimately be redundant)
     nextFunc(1) = 0;
     nextFunc(end) = 0;
 
@@ -101,12 +104,21 @@ end
 
 function output2 = Central1DFiniteDiff(speed, deltaT, deltaX, ...
     funcAheadX, func, funcBehindX, funcBehindT)
-%Central1DFiniteDiff: solves Utt = (c^2)Uxx equation
-%   This function solves Utt = (c^2)Uxx wave equation for each individual
-%   point so this will require a for loop setup to calculate all points
-%   numerically in the function. For the calculating the first set of
-%   points after the initial function is given use funcBehindT = 0 and
-%   half the result of the function
+%% Central1DFiniteDiff(speed, deltaT, deltaX, funcAheadX, func, funcBehindX, funcBehindT)
+%   speed - velocity of the wave 
+%   deltaT - change in time between the points of the function
+%   deltaX - change in space between the points of the function 
+%   funcAheadX - f(x+1,t) 
+%   func - f(x,t) 
+%   funcBehindX - f(x-1,t) 
+%   funcBehindT - f(x,t-1)
+%
+%   This is the update equation for the 1D standing wave with the Finite
+%   Difference Method. The equation is based on the acceleration of the
+%   wave in discrete points. This equation itself would have to be adjusted
+%   for the initial run of the function from t0 to t1; for that process the
+%   funcBehindT will be set to 0 and the output of this function must be
+%   multiplied by 0.5 
 arguments
    speed (1,:) {mustBeNumeric, mustBeFinite, mustBePositive}
    deltaT (1,:) {mustBeNumeric, mustBeFinite}
