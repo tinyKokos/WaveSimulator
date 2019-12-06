@@ -32,10 +32,14 @@ nextFunc = zeros(Npoints);
 pastFunc = zeros(Npoints);
 func(sourcePt) = sin(frequency*2*pi*tDelta);
 
+h = figure;
+%% CFL Checking
+% This is currently a work in progress. The program corrects the CFL by
+% changing the propagation speed of the wave to meet the CFL condition but
+% I noticed that because the propagation speed is changed such that the
+% wave never meets the boundary so I am not sure if the code has the
+% correct behaivor at the boundary.
 CFL = (PropagationSpeed*tDelta)/xDelta;
-
-%Modifying the propagation speed to fix the CFL makes working with this
-%simulation pretty frustrating. I should try some other way.
 if CFL > 1
     fprintf('Your inputs will create an unstable system. Speed will be automatically adjusted for stability\n\n');
     prompt = 'Enter desired CFL: ';
@@ -47,34 +51,46 @@ if CFL > 1
             case 1
                 PropagationSpeed = (desiredCFL*xDelta)/tDelta;
             case 2
-                
+                %This needs to correctly change the amount of the Time
+                %points to meet the CFL condition; return statement is
+                %meant to be temporary
+                return
             case 3
-                
+                %This needs to correctly change the amount of X
+                %points to meet the CFL condition; return statement is
+                %meant to be temporary
+                return
             otherwise
-                
+                %input is not valid so exit the program
+                printf('This input is not valid. Please read the prompt\n');
+                return
         end
     else
+        %Given CFL number is incorrect; exit the program
         fprintf('Not a valid CFL. Exiting Program\n');
         return
     end
 end
-h = figure;
+%% Simulation Loop
 for t = 1:NtimePoints
+    %% Plot Function
     %plot the new output
     plot(x, func);
     ylim([-2 2]);
+    %% Save Result for .GIF
     drawnow
     % Capture the plot as an image 
       frame = getframe(h); 
       im = frame2im(frame); 
       [imind,cm] = rgb2ind(im,256); 
-      % Write to the GIF File 
-      if t == 1 
+    % Write to the GIF File 
+    if t == 1 
           imwrite(imind,cm,filename,'gif', 'Loopcount',inf); 
-      else 
+    else 
           imwrite(imind,cm,filename,'gif','WriteMode','append'); 
-      end
-      for n = 2:(sourcePt-1)
+    end
+    %% Update Equation Left of Source 
+    for n = 2:(sourcePt-1)
             %NOTE TO SELF: the central Finite Diff function use in the loops
             % will be replaced with the Power Law Equation Function I made
             if t == 1
@@ -82,28 +98,27 @@ for t = 1:NtimePoints
             else
                 nextFunc(n) = Central1DFiniteDiff(PropagationSpeed, tDelta, xDelta, func(n+1), func(n), func(n-1), pastFunc(n));
             end
-      end
-      for m = (sourcePt+1):(Npoints-1)
+    end
+    %% Update Equation Right of Source
+    for m = (sourcePt+1):(Npoints-1)
             if t == 1
                 nextFunc(m)= 0.5*Central1DFiniteDiff(PropagationSpeed, tDelta, xDelta, func(m+1), func(m), func(m-1), 0);
             else
                 nextFunc(m) = Central1DFiniteDiff(PropagationSpeed, tDelta, xDelta, func(m+1), func(m), func(m-1), pastFunc(m));
             end
-      end
+    end
+    %% Update Source Point
     nextFunc(sourcePt) = sin(frequency*2*pi*t*tDelta);
     
-    %force the fixed boundary conditions
-    %(this might ultimately be redundant)
+    %% Force Boundary Condition
     nextFunc(1) = 0;
     nextFunc(end) = 0;
 
+    %% Swap Function Arrays
     pastFunc = func; %update the past function to equal the old present function
     func = nextFunc; %update the present function to equal the old future function
     pause(FrameDelay);
 end
-
-function output2 = Central1DFiniteDiff(speed, deltaT, deltaX, ...
-    funcAheadX, func, funcBehindX, funcBehindT)
 %% Central1DFiniteDiff(speed, deltaT, deltaX, funcAheadX, func, funcBehindX, funcBehindT)
 %   speed - velocity of the wave 
 %   deltaT - change in time between the points of the function
@@ -119,6 +134,10 @@ function output2 = Central1DFiniteDiff(speed, deltaT, deltaX, ...
 %   for the initial run of the function from t0 to t1; for that process the
 %   funcBehindT will be set to 0 and the output of this function must be
 %   multiplied by 0.5 
+function output2 = Central1DFiniteDiff(speed, deltaT, deltaX, ...
+    funcAheadX, func, funcBehindX, funcBehindT)
+
+%Check for valid arguments
 arguments
    speed (1,:) {mustBeNumeric, mustBeFinite, mustBePositive}
    deltaT (1,:) {mustBeNumeric, mustBeFinite}

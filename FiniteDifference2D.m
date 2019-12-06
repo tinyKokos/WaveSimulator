@@ -136,6 +136,7 @@ end
 function output4 = Central2DFiniteDiff(speedX, speedY, deltaT, deltaX, ...
     deltaY, funcAheadX, funcAheadY, func, funcBehindX, funcBehindY, funcBehindT)
 
+%Check for valid arguments
 arguments
     speedX (1,:) {mustBeNumeric, mustBeFinite, mustBePositive}
     speedY (1,:) {mustBeNumeric, mustBeFinite, mustBePositive}
@@ -169,6 +170,7 @@ end
 % cycles in both the X and Y direction.
 function output3 = SineInput2D(Cycles, Xfinal, Xinitial, Yfinal, Yinitial, NumberOfPoints)
 
+%Check for valid arguments
 arguments
    Cycles (1,:) {mustBeNumeric, mustBeFinite, mustBePositive}
    Xfinal (1,:) {mustBeNumeric, mustBeFinite}

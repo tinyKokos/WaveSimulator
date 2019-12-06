@@ -123,6 +123,7 @@ end
 function output2 = Central1DFiniteDiff(speed, deltaT, deltaX, ...
     funcAheadX, func, funcBehindX, funcBehindT)
 
+%Check for valid arguments
 arguments
    speed (1,:) {mustBeNumeric, mustBeFinite, mustBePositive}
    deltaT (1,:) {mustBeNumeric, mustBeFinite}
@@ -148,6 +149,7 @@ end
 %   that is fixed to be 0 at the boundaries of the given space
 function output = SineInput(Cycles, Xfinal, Xinitial, NumberOfPoints)
 
+%Check for valid arguments
 arguments
    Cycles (1,:) {mustBeNumeric, mustBeFinite, mustBePositive}
    Xfinal (1,:) {mustBeNumeric, mustBeFinite}
