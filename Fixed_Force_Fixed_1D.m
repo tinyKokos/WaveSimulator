@@ -15,14 +15,14 @@ initialX = 0;
 finalX = 3;
 Npoints = 200; %number of points between the initial and final X
 sourcePt = floor((Npoints)/2);
-frequency = 3; %frequency of sine for input of source point
+frequency = 1; %frequency of sine for input of source point
 
 %set inputs for the time
 initialTime = 0;
-finalTime = 20;
-NtimePoints = 50; 
+finalTime = 2;
+NtimePoints = 200; 
 
-PropagationSpeed = 300;
+PropagationSpeed = 1;
 tDelta = (finalTime-initialTime)/NtimePoints;
 xDelta = (finalX-initialX)/Npoints;
 x = linspace(initialX,finalX,Npoints);
@@ -51,15 +51,13 @@ if CFL > 1
             case 1
                 PropagationSpeed = (desiredCFL*xDelta)/tDelta;
             case 2
-                %This needs to correctly change the amount of the Time
-                %points to meet the CFL condition; return statement is
-                %meant to be temporary
-                return
+                %remember that smaller tDelta is the goal for stability
+                tDelta = (desiredCFL*xDelta)/PropagationSpeed;
+                NtimePoints = ceil((finalTime-initialTime)/tDelta);
             case 3
-                %This needs to correctly change the amount of X
-                %points to meet the CFL condition; return statement is
-                %meant to be temporary
-                return
+                %remember that bigger xDelta is the goal for stability
+                xDelta = (PropagationSpeed*tDelta)/desiredCFL;
+                Npoints = floor((finalX-initialX)/xDelta);
             otherwise
                 %input is not valid so exit the program
                 printf('This input is not valid. Please read the prompt\n');
@@ -78,6 +76,7 @@ for t = 1:NtimePoints
     plot(x, func);
     ylim([-2 2]);
     %% Save Result for .GIF
+    %{
     drawnow
     % Capture the plot as an image 
       frame = getframe(h); 
@@ -89,6 +88,7 @@ for t = 1:NtimePoints
     else 
           imwrite(imind,cm,filename,'gif','WriteMode','append'); 
     end
+    %}
     %% Update Equation Left of Source 
     for n = 2:(sourcePt-1)
             %NOTE TO SELF: the central Finite Diff function use in the loops
