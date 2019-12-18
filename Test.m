@@ -1,157 +1,184 @@
-% test different speeds, boundary settings, and cycles
-% try to undo the CFL setting the speed of the wave
-
-% Then go back to 1D to add PML (Vaughn and McGough have the code) to 
-%the 1d code
-% idea is to replace my boundary with a PML (perfectly matched layer)
-%(this is with the power law wave equation; it will be #12 in the paper
-%that McGough will email you)
-
-%Objective: start writing this code to work for 2D. 
-% new input for the 2D (Amplitude)sin(Kx)sin(Ky)
-% Kx = (n pi) / (x max)
-% Ky = (n pi) / (ymax)
+%% Fixed_Force_Fixed_1D.m
+% This is meant to model a wave traveling from a source point to a fixed
+% boundary. I realized that my old way of adjusting the CFL when the CFL
+% condition was not met by changing the speed of the propagating wave was
+% creating the situation where the wave was never meeting the boundary so I
+% do not want to publish this as complete software yet.
 
 close all;
 
-initialX = 0;
-finalX = 3;
-initialY = 0;
-finalY = 3;
-Npoints = 10; %number of points between the initial and final X, Y
-Ncycles = 1.5; %number of full sine cycles
+%% Declare Constants
+%name for the gif file output
+filename = 'FixedForceFixed1D.gif';
+%create variable for the figure for saving the output into a gif
+h = figure;
+%frame delay between each frame of the simulation t points
+FrameDelay = 0.025;
+%this is meant to be a default for the CFL check prompt
+ScaleChoice = 1;
 
 %set inputs for the time
 initialTime = 0;
-finalTime = 1;
-NtimePoints = 50; 
+finalTime = 8;
+NtimePoints = 800;
 
-PropagationSpeed = 300; %this is just meant as a place holder value
-PropagationSpeedX = PropagationSpeed; %I assume that speed in Y & X
-PropagationSpeedY = PropagationSpeed; % must be equal to each other
+initialX = 0;
+finalX = 3;
+Npoints = 200; %number of points between the initial and final X
+
+%wave properties
+PropagationSpeed = 1;
+frequency = 1; %frequency of sine for input of source point
+%% Create Intermediate Constants
+
+sourcePt = floor((Npoints)/2);
+
+%percent of the total time points that the source is creating a point
+SourceDuration = 0.125*NtimePoints;
+
 tDelta = (finalTime-initialTime)/NtimePoints;
 xDelta = (finalX-initialX)/Npoints;
-yDelta = (finalY-initialY)/Npoints;
+x = linspace(initialX,finalX,Npoints);
 
-%check CFL condition 
+func = zeros(1,Npoints);
+nextFunc = zeros(1,Npoints);
+pastFunc = zeros(1,Npoints);
+
+func(sourcePt) = sin(frequency*2*pi*tDelta);
+%% Create Attenuation Array
+alpha = zeros(1,Npoints);
+endLeft = sourcePt-1;
+beginRight = sourcePt+2;
+
+alpha_x = x(1:endLeft);
+alpha_model = alpha_x;
+alpha(1:endLeft) = flip(alpha_model);
+alpha(beginRight:end) = alpha_model;
+%% CFL Checking
+% This is currently a work in progress. The program corrects the CFL by
+% changing the propagation speed of the wave to meet the CFL condition but
+% I noticed that because the propagation speed is changed such that the
+% wave never meets the boundary so I am not sure if the code has the
+% correct behaivor at the boundary.
 CFL = (PropagationSpeed*tDelta)/xDelta;
-
 if CFL > 1
     fprintf('Your inputs will create an unstable system. Speed will be automatically adjusted for stability\n\n');
     prompt = 'Enter desired CFL: ';
     desiredCFL = input(prompt);
     if desiredCFL <= 1
-        PropagationSpeedX = (desiredCFL*xDelta)/tDelta;
-        PropagationSpeedY = (desiredCFL*yDelta)/tDelta;
+        prompt = 'Choose to scale Speed (1), Time(2), or X(3): ';
+        ScaleChoice = input(prompt);
+        switch ScaleChoice
+            case 1
+                PropagationSpeed = (desiredCFL*xDelta)/tDelta;
+            case 2
+                %remember that smaller tDelta is the goal for stability
+                tDelta = (desiredCFL*xDelta)/PropagationSpeed;
+                NtimePoints = ceil((finalTime-initialTime)/tDelta);
+            case 3
+                %remember that bigger xDelta is the goal for stability
+                xDelta = (PropagationSpeed*tDelta)/desiredCFL;
+                Npoints = floor((finalX-initialX)/xDelta);
+            otherwise
+                %input is not valid so exit the program
+                printf('This input is not valid. Please read the prompt\n');
+                return
+        end
     else
+        %Given CFL number is incorrect; exit the program
         fprintf('Not a valid CFL. Exiting Program\n');
         return
     end
 end
+%% Simulation Loop
+for t = 1:NtimePoints
+    %% Plot Function
+    %plot the new output
+    plot(x, func, x, alpha);
+    ylim([-2 2]);
+    %% Save Result for .GIF
+    %{
+    drawnow
+    % Capture the plot as an image 
+      frame = getframe(h); 
+      im = frame2im(frame); 
+      [imind,cm] = rgb2ind(im,256); 
+    % Write to the GIF File 
+    if t == 1 
+          imwrite(imind,cm,filename,'gif', 'Loopcount',inf); 
+    else 
+          imwrite(imind,cm,filename,'gif','WriteMode','append'); 
+    end
+    %}
+    %% Update Source Point
+    if t <= SourceDuration 
+        %% Update Equation Left of Source 
+        for n = 2:(sourcePt-1)
+            %NOTE TO SELF: the central Finite Diff function use in the loops
+            % will be replaced with the Power Law Equation Function I made
+            if t == 1
+                nextFunc(n)= 0.5*Central1DFiniteDiff(PropagationSpeed, tDelta, xDelta, func(n+1), func(n), func(n-1), 0);
+            else
+                nextFunc(n) = Central1DFiniteDiff(PropagationSpeed, tDelta, xDelta, func(n+1), func(n), func(n-1), pastFunc(n));
+            end
+        end
+        %% Update Equation Right of Source
+        for m = (sourcePt+1):(Npoints-1)
+            if t == 1
+                nextFunc(m)= 0.5*Central1DFiniteDiff(PropagationSpeed, tDelta, xDelta, func(m+1), func(m), func(m-1), 0);
+            else
+                nextFunc(m) = Central1DFiniteDiff(PropagationSpeed, tDelta, xDelta, func(m+1), func(m), func(m-1), pastFunc(m));
+            end
+        end
+        nextFunc(sourcePt) = sin(frequency*2*pi*t*tDelta);
+    else
+        %nextFunc(sourcePt) = 0;
+        for u = 2:(Npoints-1)
+           if t == 1
+               nextFunc(u) = 0.5*Central1DFiniteDiff(PropagationSpeed, tDelta, xDelta, func(u+1), func(u), func(u-1), 0);
+           else
+               nextFunc(u) = Central1DFiniteDiff(PropagationSpeed, tDelta, xDelta, func(u+1), func(u), func(u-1), pastFunc(u));
+           end
+        end
+    end
+    
+    %% Force Boundary Condition
+    nextFunc(1) = 0;
+    nextFunc(end) = 0;
 
-x = linspace(initialX,finalX,Npoints);
-y = linspace(initialY,finalY,Npoints);
-
-func = SineInput2D(Ncycles, finalX, initialX, finalY, initialY, Npoints);
-mesh(x, y, func);
-zlim([-2 2]);
-
-nextFunc = zeros(length(x), length(y));
-pastFunc = zeros(length(x), length(y));
-
-for t = 1:(NtimePoints-1)
-   for n = 2:(Npoints-1) %correspond to X
-      for m = 2:(Npoints-1) %correspond to Y
-          if t == 1
-              nextFunc(n,m) = 0.5*Central2DFiniteDiff(PropagationSpeedX, PropagationSpeedY, ...
-                  tDelta, xDelta, yDelta, func(n+1,m), func(n,m+1), func(n,m), ...
-                  func(n-1,m), func(n,m-1), 0);
-          else
-              nextFunc(n,m) = Central2DFiniteDiff(PropagationSpeedX, PropagationSpeedY, ...
-                  tDelta, xDelta, yDelta, func(n+1,m), func(n,m+1), func(n,m), ...
-                  func(n-1,m), func(n,m-1), pastFunc(n,m));
-          end
-          nextFunc(1,m) = 0;
-          nextFunc(end,m) = 0;
-      end
-      nextFunc(n,1) = 0;
-      nextFunc(n,end) = 0;
-   end
-   pastFunc = func; %update the past function to equal the old present function
-   func = nextFunc; %update the present function to equal the old future function
-   
-   mesh(x, y, func);
-   zlim([-2 2]);
-   pause(0.1);
+    %% Swap Function Arrays
+    pastFunc = func; %update the past function to equal the old present function
+    func = nextFunc; %update the present function to equal the old future function
+    pause(FrameDelay);
 end
-
-function output4 = Central2DFiniteDiff(speedX, speedY, deltaT, deltaX, ...
-    deltaY, funcAheadX, funcAheadY, func, funcBehindX, funcBehindY, funcBehindT)
-%Central1DFiniteDiff Summary of this function goes here
-%   Detailed explanation goes here
-
-%Note to self: this equation might be correct
-output4 = (((speedX^2)*(deltaT^2))/(deltaX^2))*(funcAheadX ...
-    - 2*func + funcBehindX) + (((speedY^2)*(deltaT^2))/(deltaY^2))*(funcAheadY ...
-    - 2*func + funcBehindY) + 2*func - funcBehindT; 
-
-end
-
+%% Central1DFiniteDiff(speed, deltaT, deltaX, funcAheadX, func, funcBehindX, funcBehindT)
+%   speed - velocity of the wave 
+%   deltaT - change in time between the points of the function
+%   deltaX - change in space between the points of the function 
+%   funcAheadX - f(x+1,t) 
+%   func - f(x,t) 
+%   funcBehindX - f(x-1,t) 
+%   funcBehindT - f(x,t-1)
+%
+%   This is the update equation for the 1D standing wave with the Finite
+%   Difference Method. The equation is based on the acceleration of the
+%   wave in discrete points. This equation itself would have to be adjusted
+%   for the initial run of the function from t0 to t1; for that process the
+%   funcBehindT will be set to 0 and the output of this function must be
+%   multiplied by 0.5 
 function output2 = Central1DFiniteDiff(speed, deltaT, deltaX, ...
     funcAheadX, func, funcBehindX, funcBehindT)
-%Central1DFiniteDiff Summary of this function goes here
-%   Detailed explanation goes here
+
+%Check for valid arguments
+arguments
+   speed (1,:) {mustBeNumeric, mustBeFinite, mustBePositive}
+   deltaT (1,:) {mustBeNumeric, mustBeFinite}
+   deltaX (1,:) {mustBeNumeric, mustBeFinite}
+   funcAheadX (:,:) {mustBeNumeric, mustBeFinite}
+   func (:,:) {mustBeNumeric, mustBeFinite}
+   funcBehindX (:,:) {mustBeNumeric, mustBeFinite}
+   funcBehindT (:,:) {mustBeNumeric, mustBeFinite}
+end
 output2 = (((speed^2)*(deltaT^2))/(deltaX^2))*(funcAheadX ...
-    - 2*func + funcBehindX) + 2*func - funcBehindT; 
+    -2*func+funcBehindX)+2*func-funcBehindT; 
 end
-
-function output3 = SineInput2D(Cycles, Xfinal, Xinitial, Yfinal, Yinitial, NumberOfPoints)
-%SineInput2D Summary of this function goes here
-%   NOTE: this does assume that the number of points is equal
-%       in the y direction and the x direction
-x = linspace(Xinitial,Xfinal,NumberOfPoints);
-y = linspace(Yinitial,Yfinal,NumberOfPoints);
-output3 = sin(((Cycles*2*pi)/Xfinal)*(x-Xinitial)).*sin(((Cycles*2*pi)/Yfinal)*(y'-Yinitial));
-end
-
-function output = SineInput(Cycles,Xfinal, Xinitial, NumberOfPoints)
-%SineInput Summary of this function goes here
-%   Detailed explanation goes here
-x = linspace(Xinitial,Xfinal,NumberOfPoints);
-output = sin(((Cycles*2*pi)/Xfinal)*(x-Xinitial));
-end
-
-%Archive
-%{
-
-%Test of central difference 1D function
-% used in the main loop
-% (this is archived just in case)
-%{
-n= 6; % this to crunch the normal equation
-
-%for time = 0 equation
-%nextFunc(n) = (((PropagationSpeed^2)*(tDelta^2))...
-%                /(2*(xDelta^2)))*(func(n+1)-2*func(n)+func(n-1))...
-%                + func(n);
-
-%for all the other times
-nextFunc(n) = (((PropagationSpeed^2)*(tDelta^2))...
-                    /(xDelta^2))*(func(n+1)-2*func(n)+func(n-1))...
-                    + 2*func(n) - pastFunc(n);
-
-%for time = 0                
-%something = 0.5*CentralFiniteDiff(PropagationSpeed, tDelta, xDelta, func(n+1), func(n), func(n-1), 0);
-
-%for time not = 0
-something = CentralFiniteDiff(PropagationSpeed, tDelta, xDelta, func(n+1), func(n), func(n-1), pastFunc(n));
-
-if something == nextFunc(n)
-    disp('Function checks out');
-else
-    disp('Function doesnt checks out');
-    disp('Function =%d\n', something);
-    disp('Equation =%d\n', nextFunc(n));
-end
-%}
-%}

@@ -7,32 +7,53 @@
 
 close all;
 
+%% Declare Constants
+%name for the gif file output
 filename = 'FixedForceFixed1D.gif';
-FrameDelay = 0;
+%create variable for the figure for saving the output into a gif
+h = figure;
+%frame delay between each frame of the simulation t points
+FrameDelay = 0.025;
+%this is meant to be a default for the CFL check prompt
 ScaleChoice = 1;
+
+%set inputs for the time
+initialTime = 0;
+finalTime = 8;
+NtimePoints = 800;
 
 initialX = 0;
 finalX = 3;
 Npoints = 200; %number of points between the initial and final X
-sourcePt = floor((Npoints)/2);
-frequency = 1; %frequency of sine for input of source point
 
-%set inputs for the time
-initialTime = 0;
-finalTime = 2;
-NtimePoints = 200; 
-
+%wave properties
 PropagationSpeed = 1;
+frequency = 1; %frequency of sine for input of source point
+%% Create Intermediate Constants
+
+sourcePt = floor((Npoints)/2);
+
+%percent of the total time points that the source is creating a point
+SourceDuration = 0.125*NtimePoints;
+
 tDelta = (finalTime-initialTime)/NtimePoints;
 xDelta = (finalX-initialX)/Npoints;
 x = linspace(initialX,finalX,Npoints);
 
-func = zeros(Npoints);
-nextFunc = zeros(Npoints);
-pastFunc = zeros(Npoints);
-func(sourcePt) = sin(frequency*2*pi*tDelta);
+func = zeros(1,Npoints);
+nextFunc = zeros(1,Npoints);
+pastFunc = zeros(1,Npoints);
 
-h = figure;
+func(sourcePt) = sin(frequency*2*pi*tDelta);
+%% Create Attenuation Array
+alpha = zeros(1,Npoints);
+endLeft = sourcePt-1;
+beginRight = sourcePt+2;
+
+alpha_x = x(1:endLeft);
+alpha_model = alpha_x;
+alpha(1:endLeft) = flip(alpha_model);
+alpha(beginRight:end) = alpha_model;
 %% CFL Checking
 % This is currently a work in progress. The program corrects the CFL by
 % changing the propagation speed of the wave to meet the CFL condition but
@@ -73,7 +94,7 @@ end
 for t = 1:NtimePoints
     %% Plot Function
     %plot the new output
-    plot(x, func);
+    plot(x, func, x, alpha);
     ylim([-2 2]);
     %% Save Result for .GIF
     %{
@@ -89,8 +110,10 @@ for t = 1:NtimePoints
           imwrite(imind,cm,filename,'gif','WriteMode','append'); 
     end
     %}
-    %% Update Equation Left of Source 
-    for n = 2:(sourcePt-1)
+    %% Update Source Point
+    if t <= SourceDuration 
+        %% Update Equation Left of Source 
+        for n = 2:(sourcePt-1)
             %NOTE TO SELF: the central Finite Diff function use in the loops
             % will be replaced with the Power Law Equation Function I made
             if t == 1
@@ -98,17 +121,26 @@ for t = 1:NtimePoints
             else
                 nextFunc(n) = Central1DFiniteDiff(PropagationSpeed, tDelta, xDelta, func(n+1), func(n), func(n-1), pastFunc(n));
             end
-    end
-    %% Update Equation Right of Source
-    for m = (sourcePt+1):(Npoints-1)
+        end
+        %% Update Equation Right of Source
+        for m = (sourcePt+1):(Npoints-1)
             if t == 1
                 nextFunc(m)= 0.5*Central1DFiniteDiff(PropagationSpeed, tDelta, xDelta, func(m+1), func(m), func(m-1), 0);
             else
                 nextFunc(m) = Central1DFiniteDiff(PropagationSpeed, tDelta, xDelta, func(m+1), func(m), func(m-1), pastFunc(m));
             end
+        end
+        nextFunc(sourcePt) = sin(frequency*2*pi*t*tDelta);
+    else
+        %nextFunc(sourcePt) = 0;
+        for u = 2:(Npoints-1)
+           if t == 1
+               nextFunc(u) = 0.5*Central1DFiniteDiff(PropagationSpeed, tDelta, xDelta, func(u+1), func(u), func(u-1), 0);
+           else
+               nextFunc(u) = Central1DFiniteDiff(PropagationSpeed, tDelta, xDelta, func(u+1), func(u), func(u-1), pastFunc(u));
+           end
+        end
     end
-    %% Update Source Point
-    nextFunc(sourcePt) = sin(frequency*2*pi*t*tDelta);
     
     %% Force Boundary Condition
     nextFunc(1) = 0;
