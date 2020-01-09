@@ -1,6 +1,6 @@
 %% FiniteDifference2D.m
 % This is the simulation of a sin(x)sin(y) that is numerically solved with
-% the Finite Difference Method in 2D. The wave will be modelled as a
+% the explicit Finite Difference Method in 2D. The wave will be modelled as a
 % standing wave in space with the wave being fixed to 0 at all boundaries. 
 %% Define Inputs
 close all;
@@ -51,7 +51,8 @@ func = SineInput2D(Ncycles, finalX, initialX, finalY, initialY, Npoints);
 % to be unstable. When the program finds out that the given values are
 % unstable then the program will ask for a CFL constant and if a value is
 % valid (i.e. <= 1) then the velocity of the function will be scaled to fit
-% the given CFL from the user.CFL = (PropagationSpeed*tDelta)/xDelta;
+% the given CFL from the user.
+CFL = (PropagationSpeed*tDelta)/xDelta;
 if CFL > 1
     %CFL is determined to be unstable, ask for a new CFL and scale the
     %speed of the function so the CFL can be the same as the given value as

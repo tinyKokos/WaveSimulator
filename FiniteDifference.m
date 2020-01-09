@@ -1,6 +1,6 @@
 %% FiniteDifference.m
 % This function is written to simulate a standing wave in 1 dimensional
-% space with the Finite Difference Method. 
+% space with the explicit Finite Difference Method. 
 
 %% Declared Input Values
 close all; 
