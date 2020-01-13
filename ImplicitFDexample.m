@@ -1,7 +1,7 @@
 %% ImplicitFDexample.m
 % This function is written to simulate a standing wave in 1 dimensional
 % space with the implicit Finite Difference Method. This is solved in explicit
-% Finite Difference.
+% Finite Difference. This will be my 1st order implicit file.
 
 %% Declared Input Values
 close all; 
@@ -10,12 +10,12 @@ close all;
 initialX = 0;
 finalX = 3;
 Npoints = 50; %number of points between the initial and final X
-Ncycles = 1.5; %number of full sine cycles
+Ncycles = 1; %number of full sine cycles
 
 %set inputs for the time
 initialTime = 0;
-finalTime = 5;
-NtimePoints = 4; 
+finalTime = 1;
+NtimePoints = 100000; 
 
 % Group Velocity of the Wave
 PropagationSpeed = 300;
@@ -26,7 +26,7 @@ D = 0;
 filename = 'output.gif';
 
 %delay value between each frame of the gif
-FrameDelay = 0.001;
+FrameDelay = 0.1;
 
 %% Calculate Constants for Later
 
@@ -111,7 +111,7 @@ end
 h = figure;
 for t = 1:NtimePoints
     %plot the new output
-    plot(x, func);
+    plot(x(2:end-1), func(2:end-1));
     %This would have to be adjusted if amplitude is adjusted
     ylim([-2 2]);    
     %{
